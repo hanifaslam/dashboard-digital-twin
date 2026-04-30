@@ -3,6 +3,7 @@
 import { AuthModal } from '@/components/common/modal/auth-modal'
 import { ResetPasswordHandler } from '@/components/common/modal/reset-password-handler'
 import { usePathname } from 'next/navigation'
+import { Suspense } from 'react'
 import { Header } from './header'
 import { MobileNav, MobileNavProvider } from './mobile-nav'
 import { ScrollToTop } from './scroll-to-top'
@@ -26,7 +27,9 @@ export function MainLayout({ children }: MainLayoutProps) {
         <MobileNav />
         {isHome && <ScrollToTop />}
         <AuthModal />
-        <ResetPasswordHandler />
+        <Suspense fallback={null}>
+          <ResetPasswordHandler />
+        </Suspense>
       </div>
     </MobileNavProvider>
   )
