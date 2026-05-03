@@ -165,7 +165,7 @@ function LoginForm() {
       <Button
         type="submit"
         variant="default"
-        className="hover:bg-primary/90 border-primary/90 bg-primary w-full border p-2 text-white transition-colors font-semibold"
+        className="hover:bg-primary/90 border-primary/90 bg-primary w-full border p-2 text-white transition-colors font-semibold h-10"
         disabled={loginMutation.isPending}
       >
         {loginMutation.isPending ? (
