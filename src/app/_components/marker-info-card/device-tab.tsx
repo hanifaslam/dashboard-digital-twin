@@ -4,17 +4,16 @@ import { Monitor } from "lucide-react";
 
 export function DeviceTab() {
   return (
-    <div className="mt-0 w-full">
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="bg-muted/30 p-5 rounded-full mb-5">
-          <Monitor className="h-10 w-10 text-muted-foreground/20" />
-        </div>
-        <p className="text-base text-muted-foreground font-semibold">
-          No available devices
-        </p>
-        <p className="text-xs text-muted-foreground/60 mt-2 max-w-[250px] leading-relaxed">
-          Sistem monitoring perangkat sedang dalam pengembangan tahap awal
-        </p>
+    <div className="h-full w-full flex flex-col">
+      <div className="flex items-center mb-3 flex-none">
+        <span className="text-sm font-semibold text-foreground">
+          Devices in Room
+        </span>
+      </div>
+
+      <div className="h-[30vh] w-full flex flex-col items-center justify-center text-center">
+        <Monitor className="h-10 w-10 text-muted-foreground/40 mb-4" />
+        <p className="text-xs text-muted-foreground">No devices in this room</p>
       </div>
     </div>
   );

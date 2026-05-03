@@ -9,7 +9,12 @@ export default function Home() {
     {
       id: "cmoa65k7h0000xcbcu6nbkt9o",
       position: [1.19, -1.5, -4.25],
-      label: "Ruang Dosen TRK",
+      label: "Ruang Dosen IK",
+    },
+    {
+      id: "cmnb91gab000tmsbc9vp9itjb",
+      position: [1.19, -1.5, 3.24],
+      label: "Room 1.1",
     },
   ]);
 
