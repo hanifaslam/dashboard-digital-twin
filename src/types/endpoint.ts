@@ -8,21 +8,15 @@ export const API_ENDPOINT = {
     RESET_PASSWORD_VERIFY_TOKEN: "/auth/reset-password/verify",
     ME: "/auth/me",
   },
-  USER_MANAGEMENT: {
-    ROLE: {
-      BASE: "admin/roles",
-      SHOW: "admin/roles/:id/show",
-      UPDATE: "admin/roles/:id/update",
-      UPDATE_STATUS: "admin/roles/:id/status",
-      ALL: "admin/roles/all",
-      ACCESS_TREE: "admin/roles/access-tree",
+  DIGITAL_TWIN: {
+    LECTURER: {
+      BASE: "dashboard/rooms/:id/lecturers",
     },
-    USER: {
-      BASE: "admin/users",
-      RESET_PASSWORD: "admin/users/:id/reset-password",
-      SHOW: "admin/users/:id/show",
-      UPDATE: "admin/users/:id/update",
-      UPDATE_STATUS: "admin/users/:id/status",
+    SCHEDULE: {
+      BASE: "dashboard/rooms/:id/schedules",
+    },
+    ROOM: {
+      BASE: "dashboard/rooms/:id",
     },
   },
 };

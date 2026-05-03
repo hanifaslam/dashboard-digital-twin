@@ -74,7 +74,7 @@ export function Header() {
   return (
     <header className={headerClass} suppressHydrationWarning>
       <div className="container mx-auto flex h-16 lg:h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="relative h-8 w-8 lg:hidden shrink-0">
+        <Link href="/" className="relative h-12 w-12 lg:hidden shrink-0">
           <Image
             src="/logo.png"
             alt="Dashboard"
@@ -95,7 +95,7 @@ export function Header() {
         <div className="hidden lg:flex items-center">
           <Link
             href="/"
-            className="relative h-10 w-10 hover:opacity-80 transition-opacity"
+            className="relative h-18 w-18 hover:opacity-80 transition-opacity"
             draggable={false}
           >
             <Image

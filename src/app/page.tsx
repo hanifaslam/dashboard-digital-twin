@@ -7,11 +7,9 @@ export default function Home() {
   // Contoh daftar marker (Silakan sesuaikan koordinat [x, y, z] dengan model kamu)
   const [markers] = useState<Marker[]>([
     {
-      id: "room-1",
+      id: "cmoa65k7h0000xcbcu6nbkt9o",
       position: [1.19, -1.5, -4.25],
       label: "Ruang Dosen TRK",
-      description:
-        "Ruangan dosen Program Studi Teknik Rekayasa Komputer. Dilengkapi dengan fasilitas AC, Wi-Fi, dan area kolaborasi.",
     },
   ]);
 
@@ -20,7 +18,7 @@ export default function Home() {
   };
 
   return (
-    <main className="relative w-full h-[calc(100vh-64px)] lg:h-[calc(100vh-80px)] overflow-hidden bg-black mt-16 lg:mt-20">
+    <main className="relative w-full h-[calc(100vh-64px)] lg:h-[calc(100vh-80px)] overflow-hidden bg-gray-500 mt-16 lg:mt-20">
       {/* 3D Scene Viewer dengan Markers */}
       <div className="absolute inset-0 z-0">
         <SceneViewer

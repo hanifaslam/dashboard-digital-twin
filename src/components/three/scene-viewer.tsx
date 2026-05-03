@@ -3,9 +3,12 @@
 import { Suspense, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, ThreeEvent } from "@react-three/fiber";
+import { useQueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+
 import { OrbitControls, Stage, useGLTF, Html } from "@react-three/drei";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { MarkerInfoCard } from "./marker-info-card";
+import { MarkerInfoCard } from "@/app/_components/marker-info-card";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -72,6 +75,7 @@ export default function SceneViewer({
   markers = [],
   onMarkerClick,
 }: SceneViewerProps) {
+  const queryClient = useQueryClient();
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const [previewPos, setPreviewPos] = useState<[number, number, number] | null>(
     null,
@@ -100,7 +104,8 @@ export default function SceneViewer({
         dpr={[1, 2]} 
         camera={{ position: [10, 0, 0], fov: 45 }}
       >
-        <Suspense fallback={<LoadingOverlay />}>
+        <QueryClientProvider client={queryClient}>
+          <Suspense fallback={<LoadingOverlay />}>
           <Stage
             environment="city"
             intensity={0.5}
@@ -129,20 +134,20 @@ export default function SceneViewer({
                 center
                 zIndexRange={[10, 0]}
               >
-                <Popover
-                  open={activeMarkerId === marker.id}
-                  onOpenChange={(open) =>
-                    setActiveMarkerId(open ? marker.id : null)
-                  }
+                <Popover 
+                  modal={false}
+                  open={activeMarkerId === marker.id} 
+                  onOpenChange={(open) => {
+                    if (open) {
+                      setActiveMarkerId(marker.id);
+                      onMarkerClick?.(marker);
+                    } else {
+                      setActiveMarkerId(null);
+                    }
+                  }}
                 >
                   <PopoverTrigger asChild>
-                    <div
-                      className="relative group/marker cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onMarkerClick?.(marker);
-                      }}
-                    >
+                    <div className="relative group/marker cursor-pointer">
                       {/* Efek Ping */}
                       <div className="absolute inset-0 w-4 h-4 bg-blue-500 rounded-full animate-ping opacity-75" />
 
@@ -164,24 +169,27 @@ export default function SceneViewer({
                       )}
                     </div>
                   </PopoverTrigger>
-
-                  <PopoverContent
-                    side="right"
-                    align="end"
+                  
+                  <PopoverContent 
+                    side="right" 
+                    align="end" 
                     sideOffset={15}
-                    className="p-0 w-auto bg-transparent border-none shadow-none"
+                    className="p-0 w-auto bg-transparent border-none shadow-none focus:outline-none"
                   >
-                    <MarkerInfoCard
-                      title={marker.label}
-                      description={marker.description}
-                      onClose={() => setActiveMarkerId(null)}
-                    />
+                    <QueryClientProvider client={queryClient}>
+                      <MarkerInfoCard
+                        id={marker.id}
+                        title={marker.label}
+                        onClose={() => setActiveMarkerId(null)}
+                      />
+                    </QueryClientProvider>
                   </PopoverContent>
                 </Popover>
               </Html>
             ))}
           </Stage>
         </Suspense>
+        </QueryClientProvider>
         <OrbitControls
           ref={controlsRef}
           makeDefault
