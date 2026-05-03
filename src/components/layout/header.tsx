@@ -12,17 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  ChevronDown,
-  HistoryIcon,
-  HomeIcon,
-  Landmark,
-  LogOut,
-  Menu,
-  RotateCcw,
-  User,
-  UserIcon,
-} from "lucide-react";
+import { ChevronDown, LogOut, Menu, User, UserIcon } from "lucide-react";
 import Image from "next/image";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -179,34 +169,6 @@ export function Header() {
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="text-foreground focus:text-primary cursor-pointer"
-                  onClick={() => router.push("/profile/saved-room")}
-                >
-                  <HomeIcon className="h-4 w-4 mr-2" />
-                  Saved Room
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-foreground focus:text-primary cursor-pointer"
-                  onClick={() => router.push("/profile/booking-history")}
-                >
-                  <HistoryIcon className="h-4 w-4 mr-2" />
-                  Booking History
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-foreground focus:text-primary cursor-pointer"
-                  onClick={() => router.push("/profile/bank-account")}
-                >
-                  <Landmark className="h-4 w-4 mr-2" />
-                  Bank Account
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-foreground focus:text-primary cursor-pointer"
-                  onClick={() => router.push("/profile/refund-history")}
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Refund History
-                </DropdownMenuItem>
-                <DropdownMenuItem
                   onClick={handleLogout}
                   className="text-destructive focus:text-destructive cursor-pointer"
                 >
@@ -219,7 +181,7 @@ export function Header() {
             <div className="flex items-center gap-2">
               <Button
                 variant={"outline"}
-                className="bg-transparent text-primary hover:text-white hover:bg-primary border border-primary transition-all px-6"
+                className="bg-primary text-white hover:text-white hover:bg-primary/90 transition-all px-6 h-9"
                 onClick={() => authModal.open("login")}
               >
                 Login

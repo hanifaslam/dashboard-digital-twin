@@ -1,52 +1,58 @@
-'use client'
+"use client";
 
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput
-} from '@/components/ui/input-group'
-import { cn } from '@/lib/utils'
-import { Eye, EyeOff } from 'lucide-react'
-import { forwardRef, useState } from 'react'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Eye, EyeOff } from "lucide-react";
+import React, { forwardRef, useState } from "react";
 
-export interface PasswordInputProps extends Omit<
-  React.ComponentProps<'input'>,
-  'type'
-> {
-  showToggle?: boolean
-}
+type PasswordInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  hint?: React.ReactNode;
+  error?: React.ReactNode;
+  showToggle?: boolean;
+};
 
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ className, showToggle = true, ...props }, ref) => {
-    const [showPassword, setShowPassword] = useState(false)
+  ({ hint, error, showToggle = true, className, ...inputProps }, ref) => {
+    const [visible, setVisible] = useState(false);
 
     return (
-      <InputGroup className={cn(className)}>
-        <InputGroupInput
-          ref={ref}
-          type={showPassword ? 'text' : 'password'}
-          {...props}
-        />
-        {showToggle && (
-          <InputGroupAddon align="inline-end">
-            <button
+      <div>
+        <div className="relative">
+          <Input
+            ref={ref}
+            type={visible ? "text" : "password"}
+            className={[className ?? "", "pr-10"].filter(Boolean).join(" ")}
+            {...inputProps}
+          />
+
+          {showToggle && (
+            <Button
+              variant="ghost"
+              size="sm"
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="text-muted-foreground hover:text-foreground"
+              aria-label={visible ? "Hide password" : "Show password"}
+              onClick={() => setVisible((v) => !v)}
+              className="absolute top-1/2 right-1 -translate-y-1/2"
               tabIndex={-1}
             >
-              {showPassword ? (
-                <EyeOff className="size-4" />
+              {visible ? (
+                <EyeOff className="h-4 w-4" />
               ) : (
-                <Eye className="size-4" />
+                <Eye className="h-4 w-4" />
               )}
-            </button>
-          </InputGroupAddon>
-        )}
-      </InputGroup>
-    )
-  }
-)
-PasswordInput.displayName = 'PasswordInput'
+            </Button>
+          )}
+        </div>
 
-export { PasswordInput }
+        {hint && !error && (
+          <p className="text-muted-foreground mt-1 text-sm">{hint}</p>
+        )}
+        {error && <p className="text-destructive mt-1 text-sm">{error}</p>}
+      </div>
+    );
+  },
+);
+
+PasswordInput.displayName = "PasswordInput";
+
+export default PasswordInput;

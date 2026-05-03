@@ -1,6 +1,5 @@
 "use client";
 
-import { PasswordInput } from "@/components/common/input/password-input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -11,15 +10,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { useAuthModal } from "@/hooks/use-auth-modal";
 import { parseAxiosError } from "@/lib/utils";
-import {
-  AuthInput,
-  authSchema,
-  registerSchema,
-  RegisterInput,
-} from "@/schema/auth-schema";
+import { AuthInput, authSchema } from "@/schema/auth-schema";
 
 import { AuthService } from "@/service/auth-service";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,88 +24,38 @@ import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
+import PasswordInput from "../input/password-input";
 
 export function AuthModal() {
-  const { isOpen, activeTab, close, setTab } = useAuthModal();
+  const { isOpen, close } = useAuthModal();
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()} modal>
       <DialogContent
-        className="max-w-[420px] p-0 rounded-2xl max-h-[90vh] overflow-hidden"
+        className="sm:max-w-[500px] p-0 rounded-2xl max-h-[90vh] overflow-hidden"
         showCloseButton={false}
       >
         <DialogTitle className="sr-only">Authentication</DialogTitle>
         <ScrollArea className="max-h-[90vh]">
-          <div className="flex flex-col gap-6 p-8">
-            <div className="flex flex-col items-start">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={56}
-                height={48}
-                className="mb-4 invert"
-              />
-              <p className="text-sm text-muted-foreground">
-                Access your account to manage your digital twin assets.
-              </p>
-            </div>
-
-            <div className="relative">
-              <div className="flex border-b">
-                <button
-                  onClick={() => setTab("login")}
-                  className={`flex-1 pb-3 text-sm font-medium transition-colors duration-200 ${
-                    activeTab === "login"
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => setTab("register")}
-                  className={`flex-1 pb-3 text-sm font-medium transition-colors duration-200 ${
-                    activeTab === "register"
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Register
-                </button>
+          <div className="flex flex-col gap-8 p-8">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="w-48 h-30 flex items-center justify-center">
+                <Image
+                  src="/logo.png"
+                  alt="Logo"
+                  width={512}
+                  height={512}
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <div
-                className="absolute bottom-0 h-0.5 w-1/2 bg-primary transition-transform duration-300 ease-out"
-                style={{
-                  transform: `translateX(${activeTab === "login" ? "0%" : "100%"})`,
-                }}
-              />
+              <span className="text-xl font-semibold">
+                Digital Twin Management System
+              </span>
             </div>
 
-            {activeTab === "login" ? <LoginForm /> : <RegisterForm />}
-
-            <div className="text-center text-xs text-muted-foreground space-y-1">
-              <p>
-                By continuing, you agree to our{" "}
-                <Link
-                  href="/terms"
-                  className="text-primary hover:underline font-medium"
-                >
-                  Terms of Service
-                </Link>
-              </p>
-              <p>
-                and{" "}
-                <Link
-                  href="/privacy"
-                  className="text-primary hover:underline font-medium"
-                >
-                  Privacy Policy
-                </Link>
-                .
-              </p>
-            </div>
+            <LoginForm />
           </div>
         </ScrollArea>
       </DialogContent>
@@ -125,12 +70,14 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
-  } = useForm<AuthInput>({
+  } = useForm<AuthInput & { remember_me?: boolean }>({
     resolver: zodResolver(authSchema),
     defaultValues: {
       email: "",
       password: "",
+      remember_me: false,
     },
   });
 
@@ -151,34 +98,74 @@ function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <Field>
-        <FieldLabel>Email</FieldLabel>
-        <FieldContent>
-          <Input
-            placeholder="Enter your email"
-            {...register("email")}
-            disabled={loginMutation.isPending}
-          />
-          <FieldError errors={[errors.email]} />
-        </FieldContent>
-      </Field>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="space-y-4">
+        <Field>
+          <FieldLabel className="text-sm font-normal">
+            <span>Username or Email</span>
+            <span className="text-red-500 ml-1">*</span>
+          </FieldLabel>
+          <FieldContent>
+            <Input
+              placeholder="Enter username"
+              {...register("email")}
+              disabled={loginMutation.isPending}
+              className="border border-gray-300 p-2 h-10"
+              autoComplete="off"
+            />
+            <FieldError errors={[errors.email]} />
+          </FieldContent>
+        </Field>
 
-      <Field>
-        <FieldLabel>Password</FieldLabel>
-        <FieldContent>
-          <PasswordInput
-            placeholder="Enter your password"
-            {...register("password")}
-            disabled={loginMutation.isPending}
-          />
-          <FieldError errors={[errors.password]} />
-        </FieldContent>
-      </Field>
+        <Field>
+          <FieldLabel className="text-sm font-normal">
+            <span>Password</span>
+            <span className="text-red-500 ml-1">*</span>
+          </FieldLabel>
+          <FieldContent>
+            <PasswordInput
+              placeholder="Enter password"
+              {...register("password")}
+              disabled={loginMutation.isPending}
+              autoComplete="off"
+              className="h-10"
+            />
+            <FieldError errors={[errors.password]} />
+          </FieldContent>
+        </Field>
+
+        <div className="flex items-center justify-between">
+          <div className="flex flex-row items-center space-y-0 gap-2">
+            <Controller
+              name="remember_me"
+              control={control}
+              render={({ field }) => (
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
+            <FieldLabel className="text-sm font-normal cursor-pointer">
+              Remember Me
+            </FieldLabel>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end mb-4">
+        <Link
+          href="/forgot-password"
+          className="p-0 h-auto text-sm text-primary hover:text-primary/80"
+        >
+          Forgot Password
+        </Link>
+      </div>
 
       <Button
         type="submit"
-        className="w-full"
+        variant="default"
+        className="hover:bg-primary/90 border-primary/90 bg-primary w-full border p-2 text-white transition-colors font-semibold"
         disabled={loginMutation.isPending}
       >
         {loginMutation.isPending ? (
@@ -189,93 +176,6 @@ function LoginForm() {
         ) : (
           "Login"
         )}
-      </Button>
-    </form>
-  );
-}
-
-function RegisterForm() {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      name: "",
-      phone_number: "",
-      email: "",
-      gender: "",
-      birth_date: "",
-    },
-  });
-
-  const registerMutation = useMutation({
-    mutationFn: AuthService.register,
-    onSuccess: () => {
-      toast.success("Registration Successful! Please login.");
-      reset();
-    },
-    onError: (error) => {
-      toast.error(parseAxiosError(error, "Registration Failed"));
-    },
-  });
-
-  const onSubmit = (data: RegisterInput) => {
-    registerMutation.mutate(data);
-  };
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <Field>
-        <FieldLabel>
-          Name<span className="text-destructive ml-1">*</span>
-        </FieldLabel>
-        <FieldContent>
-          <Input
-            placeholder="Full name"
-            {...register("name")}
-            disabled={registerMutation.isPending}
-          />
-          <FieldError errors={[errors.name]} />
-        </FieldContent>
-      </Field>
-
-      <Field>
-        <FieldLabel>
-          Phone Number<span className="text-destructive ml-1">*</span>
-        </FieldLabel>
-        <FieldContent>
-          <Input
-            placeholder="Phone number (e.g. 0812...)"
-            {...register("phone_number")}
-            disabled={registerMutation.isPending}
-          />
-          <FieldError errors={[errors.phone_number]} />
-        </FieldContent>
-      </Field>
-
-      <Field>
-        <FieldLabel>
-          Email<span className="text-destructive ml-1">*</span>
-        </FieldLabel>
-        <FieldContent>
-          <Input
-            placeholder="Email address"
-            {...register("email")}
-            disabled={registerMutation.isPending}
-          />
-          <FieldError errors={[errors.email]} />
-        </FieldContent>
-      </Field>
-
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={registerMutation.isPending}
-      >
-        {registerMutation.isPending ? "Registering..." : "Register"}
       </Button>
     </form>
   );
