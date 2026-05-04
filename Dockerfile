@@ -1,7 +1,7 @@
 # -------------------------
 # 1. Install dependencies
 # -------------------------
-FROM node:20-slim AS deps
+FROM node:22-slim AS deps
 WORKDIR /app
 
 # Enable Corepack agar bisa pakai Yarn
@@ -16,7 +16,7 @@ RUN yarn install --frozen-lockfile
 # -------------------------
 # 2. Build app
 # -------------------------
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 WORKDIR /app
 RUN corepack enable
 
@@ -36,7 +36,7 @@ RUN yarn build
 # -------------------------
 # 3. Production image (Optimized Standalone)
 # -------------------------
-FROM node:20-slim AS runner
+FROM node:22-slim AS runner
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
