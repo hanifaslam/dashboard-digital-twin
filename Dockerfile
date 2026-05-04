@@ -4,12 +4,13 @@
 FROM node:20-slim AS deps
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+# Enable Corepack agar bisa pakai Yarn
+RUN corepack enable
 
-# Lebih stabil + cepat
-RUN npm ci
+COPY package.json yarn.lock* ./
 
-
+# Instalasi menggunakan Yarn (lebih sinkron dengan local Anda)
+RUN yarn install --frozen-lockfile
 
 
 # -------------------------
@@ -17,6 +18,7 @@ RUN npm ci
 # -------------------------
 FROM node:20-slim AS builder
 WORKDIR /app
+RUN corepack enable
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -28,7 +30,7 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_DISABLE_CSRF
 ENV NEXT_PUBLIC_DISABLE_CSRF=$NEXT_PUBLIC_DISABLE_CSRF
 
-RUN npm run build
+RUN yarn build
 
 
 # -------------------------
@@ -46,7 +48,7 @@ ENV PORT=3000
 # Security
 RUN groupadd -r nodejs && useradd -r -g nodejs nextjs
 
-# Copy hasil build standalone (sangat hemat RAM)
+# Copy hasil build standalone
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
@@ -58,5 +60,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
-# Jalankan server.js (bawaan dari standalone mode)
+# Tetap jalankan server.js bawaan standalone
 CMD ["node", "server.js"]
