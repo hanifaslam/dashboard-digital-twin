@@ -28,6 +28,23 @@ async function fetchCsrfToken() {
   return csrfToken
 }
 
+let isRefreshing = false
+let failedQueue: {
+  resolve: (value?: unknown) => void
+  reject: (reason?: unknown) => void
+}[] = []
+
+const processQueue = (error: AxiosError | null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve()
+    }
+  })
+  failedQueue = []
+}
+
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
 
@@ -96,23 +113,58 @@ axiosInstance.interceptors.response.use(
     }
 
     if (status === 401) {
-      const requestUrl = error.config?.url || ''
-      const isAuthCheckRequest =
-        requestUrl.includes('auth/me') || requestUrl === 'profile'
+      const originalRequest = error.config as AxiosRequestConfig & {
+        _retry?: boolean
+      }
 
-      localStorage.removeItem('auth-data')
       if (
-        typeof window !== 'undefined' &&
-        !window.location.pathname.includes('/login') &&
-        !isAuthCheckRequest
+        originalRequest.url?.includes('auth/login') ||
+        originalRequest.url?.includes('auth/refresh')
       ) {
-        if (!isSessionExpiredToastShown) {
-          isSessionExpiredToastShown = true
-          toast.error('Session has expired. Please log in again.')
-          authEvents.emitUnauthorized()
-          setTimeout(() => {
-            isSessionExpiredToastShown = false
-          }, 3000)
+        return Promise.reject(error)
+      }
+
+      if (!originalRequest._retry) {
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject })
+          })
+            .then(() => axiosInstance(originalRequest))
+            .catch((err) => Promise.reject(err))
+        }
+
+        originalRequest._retry = true
+        isRefreshing = true
+
+        try {
+          await axiosInstance.post('/auth/refresh')
+          processQueue(null)
+          return await axiosInstance(originalRequest)
+        } catch (refreshError) {
+          processQueue(refreshError as AxiosError)
+
+          const requestUrl = error.config?.url || ''
+          const isAuthCheckRequest =
+            requestUrl.includes('auth/me') || requestUrl === 'profile'
+
+          localStorage.removeItem('auth-data')
+          if (
+            typeof window !== 'undefined' &&
+            !window.location.pathname.includes('/login') &&
+            !isAuthCheckRequest
+          ) {
+            if (!isSessionExpiredToastShown) {
+              isSessionExpiredToastShown = true
+              toast.error('Session has expired. Please log in again.')
+              authEvents.emitUnauthorized()
+              setTimeout(() => {
+                isSessionExpiredToastShown = false
+              }, 3000)
+            }
+          }
+          return Promise.reject(refreshError)
+        } finally {
+          isRefreshing = false
         }
       }
     }
