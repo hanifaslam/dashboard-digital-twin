@@ -8,9 +8,23 @@ export const PasswordSchema = z
   .regex(/[a-z]/, "Password must contain at least one lowercase letter")
   .regex(/[0-9]/, "Password must contain at least one number");
 
-// Schema for Login
 export const authSchema = z.object({
-  email: z.string().email("Invalid email address").min(1, "Email is required"),
+  login: z
+    .string()
+    .trim()
+    .refine(
+      (val) => {
+        if (val.includes('@')) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
+        } else {
+          return val.length >= 1
+        }
+      },
+      { message: 'Invalid username or email' }
+    )
+    .max(100, {
+      message: 'Username or email is too long (max. 100 characters)'
+    }),
   password: z.string().min(1, "Password is required"),
   remember_me: z.boolean().optional(),
   recaptcha_token: z.string().optional(),
@@ -18,16 +32,6 @@ export const authSchema = z.object({
 
 export type AuthInput = z.infer<typeof authSchema>;
 
-// Schema for Registration
-export const registerSchema = z.object({
-  name: z.string().min(1, "Full name is required"),
-  email: z.string().email("Invalid email address").min(1, "Email is required"),
-  phone_number: z.string().min(10, "Phone number must be at least 10 digits"),
-  gender: z.string().optional(),
-  birth_date: z.string().optional(),
-});
-
-export type RegisterInput = z.infer<typeof registerSchema>;
 
 // Schema for Reset Password
 export const resetPasswordSchema = z

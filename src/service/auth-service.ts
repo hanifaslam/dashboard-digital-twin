@@ -1,9 +1,9 @@
 import { api } from "@/lib/axios";
-import { AuthInput, RegisterInput, ResetPasswordFormValues } from "@/schema/auth-schema";
+import { AuthInput, ResetPasswordFormValues } from "@/schema/auth-schema";
 
 import { BaseResponse } from "@/types/base-api";
 import { API_ENDPOINT } from "@/types/endpoint";
-import { LoginResponse, MeResponse, RegisterResponse } from "@/types/response/auth-response";
+import { LoginResponse, MeResponse } from "@/types/response/auth-response";
 
 function getResponseData<T>(response: BaseResponse<T>) {
   const data = response.data as T | T[];
@@ -19,13 +19,7 @@ export const AuthService = {
     return getResponseData(response);
   },
 
-  register: async (data: RegisterInput) => {
-    const response = await api.post<RegisterResponse, RegisterInput>(
-      API_ENDPOINT.AUTH.REGISTER,
-      data
-    );
-    return response; // Register usually returns BaseResponse directly or we can use getResponseData if needed
-  },
+
 
   resetPassword: async (data: ResetPasswordFormValues & { token?: string }) => {
     const response = await api.put<MeResponse, ResetPasswordFormValues & { token?: string }>(

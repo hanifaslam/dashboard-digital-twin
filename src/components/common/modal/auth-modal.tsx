@@ -51,7 +51,7 @@ export function AuthModal() {
                 />
               </div>
               <span className="text-xl font-semibold">
-                Digital Twin Management System
+                Digital Twin Dashboard
               </span>
             </div>
 
@@ -75,7 +75,7 @@ function LoginForm() {
   } = useForm<AuthInput & { remember_me?: boolean }>({
     resolver: zodResolver(authSchema),
     defaultValues: {
-      email: "",
+      login: "",
       password: "",
       remember_me: false,
     },
@@ -108,12 +108,12 @@ function LoginForm() {
           <FieldContent>
             <Input
               placeholder="Enter username"
-              {...register("email")}
+              {...register("login")}
               disabled={loginMutation.isPending}
               className="border border-gray-300 p-2 h-10"
               autoComplete="off"
             />
-            <FieldError errors={[errors.email]} />
+            <FieldError errors={[errors.login]} />
           </FieldContent>
         </Field>
 
@@ -141,12 +141,16 @@ function LoginForm() {
               control={control}
               render={({ field }) => (
                 <Checkbox
+                  id="remember_me_modal"
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
               )}
             />
-            <FieldLabel className="text-sm font-normal cursor-pointer">
+            <FieldLabel
+              htmlFor="remember_me_modal"
+              className="text-sm font-normal cursor-pointer"
+            >
               Remember Me
             </FieldLabel>
           </div>
