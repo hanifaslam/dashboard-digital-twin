@@ -25,7 +25,9 @@ function MarkerInfoCardInternal({ id, title, className }: MarkerInfoCardProps) {
   const [activeTab, setActiveTab] = React.useState("lecturer");
   const { data: user } = useAuthQuery();
 
-  const hasDeviceControlAccess = user?.access?.some((a) => a.code === "device_control");
+  const hasDeviceControlAccess = user?.access?.some(
+    (a) => a.code === "device_control",
+  );
   const isLecturerRoom = room?.name?.toLowerCase().includes("dosen");
 
   return (
@@ -96,7 +98,7 @@ function MarkerInfoCardInternal({ id, title, className }: MarkerInfoCardProps) {
                 className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:border-x-transparent data-[state=active]:border-t-transparent rounded-none h-full px-1 gap-2 text-xs font-semibold transition-none focus:outline-none focus-visible:ring-0 focus-visible:outline-none focus-visible:border-transparent"
               >
                 <Calendar className="h-4 w-4" />
-                Jadwal
+                Schedule
               </TabsTrigger>
             )}
           </TabsList>
@@ -112,7 +114,10 @@ function MarkerInfoCardInternal({ id, title, className }: MarkerInfoCardProps) {
           )}
 
           {!isLecturerRoom && (
-            <TabsContent value="schedule" className="mt-0 px-5 py-2 outline-none">
+            <TabsContent
+              value="schedule"
+              className="mt-0 px-5 py-2 outline-none"
+            >
               {activeTab === "schedule" && <ScheduleTab roomId={id} />}
             </TabsContent>
           )}
