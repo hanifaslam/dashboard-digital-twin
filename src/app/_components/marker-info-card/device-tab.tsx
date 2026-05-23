@@ -1,17 +1,19 @@
 "use client";
 
 import { Droplet, Monitor, Power, Thermometer, Zap } from "lucide-react";
-import {
-  useDeviceListQuery,
-  useControlDeviceMutation,
-} from "@/hooks/api/digital-twin/use-device";
-import { useDeviceSocket } from "@/hooks/api/socket/use-device-socket";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { ListDeviceResponse } from "@/types/response/digital-twin/device-response";
-import { cn, parseAxiosError } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+
+import {
+  useControlDeviceMutation,
+  useDeviceListQuery,
+} from "@/hooks/api/digital-twin/use-device";
+import { useDeviceSocket } from "@/hooks/api/socket/use-device-socket";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { cn, parseAxiosError } from "@/lib/utils";
+import type { ListDeviceResponse } from "@/types/response/digital-twin/device-response";
 
 interface DeviceTabProps {
   roomId: string;
@@ -25,11 +27,12 @@ const environmentMetrics = [
     unit: "°C",
     description: "Slightly warm",
     accent: "text-red-400",
-    trackClassName: "bg-gradient-to-r from-amber-400 via-orange-400 to-red-400",
+    indicatorClassName:
+      "[&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-amber-400 [&>[data-slot=progress-indicator]]:via-orange-400 [&>[data-slot=progress-indicator]]:to-red-400",
     statusClassName: "text-amber-300",
     dotClassName: "bg-amber-400",
     iconClassName:
-      "text-red-400/90 bg-red-500/8 shadow-[0_0_12px_rgba(248,113,113,0.14)]",
+      "bg-red-500/8 text-red-400/90 shadow-[0_0_12px_rgba(248,113,113,0.14)]",
     progress: 42,
     Icon: Thermometer,
   },
@@ -40,11 +43,12 @@ const environmentMetrics = [
     unit: "%",
     description: "Normal",
     accent: "text-blue-400",
-    trackClassName: "bg-gradient-to-r from-sky-400 to-blue-500",
+    indicatorClassName:
+      "[&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-sky-400 [&>[data-slot=progress-indicator]]:to-blue-500",
     statusClassName: "text-emerald-300",
     dotClassName: "bg-emerald-400",
     iconClassName:
-      "text-blue-300/90 bg-blue-500/8 shadow-[0_0_12px_rgba(96,165,250,0.12)]",
+      "bg-blue-500/8 text-blue-300/90 shadow-[0_0_12px_rgba(96,165,250,0.12)]",
     progress: 68,
     Icon: Droplet,
   },
@@ -56,10 +60,9 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
   const { data: devicesResp, isLoading } = useDeviceListQuery({
     room_id: roomId,
   });
-
   const controlMutation = useControlDeviceMutation();
 
-  const devices = devicesResp?.data || [];
+  const devices = devicesResp?.data ?? [];
 
   const handleToggleControl = async (device: ListDeviceResponse) => {
     const isTurningOn = !device.is_on;
@@ -78,15 +81,15 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
   };
 
   return (
-    <div className="w-full flex flex-col h-full overflow-hidden">
-      <div className="flex items-center mb-4 flex-none gap-2">
-        <Monitor className="w-4 h-4 text-cyan-400" />
+    <div className="flex h-full w-full flex-col overflow-hidden">
+      <div className="mb-4 flex flex-none items-center gap-2">
+        <Monitor className="h-4 w-4 text-cyan-400" />
         <span className="text-xs font-semibold text-white/90">
           Device Control
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto -mx-5 px-5 custom-scrollbar">
+      <div className="-mx-5 flex-1 overflow-y-auto px-5 custom-scrollbar">
         <div className="flex flex-col gap-3 pb-5">
           <div className="glass-card rounded-xl p-3.5 sm:p-4">
             <div className="mb-3 flex items-center gap-2">
@@ -128,15 +131,13 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
                       </span>
                     </div>
 
-                    <div className="mb-2.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                      <div
-                        className={cn(
-                          "h-full rounded-full transition-all duration-700",
-                          metric.trackClassName,
-                        )}
-                        style={{ width: `${metric.progress}%` }}
-                      />
-                    </div>
+                    <Progress
+                      value={metric.progress}
+                      className={cn(
+                        "mb-2.5 h-1.5 w-full bg-white/10",
+                        metric.indicatorClassName,
+                      )}
+                    />
 
                     <div
                       className={cn(
@@ -145,10 +146,7 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
                       )}
                     >
                       <span
-                        className={cn(
-                          "h-2 w-2 rounded-full",
-                          metric.dotClassName,
-                        )}
+                        className={cn("h-2 w-2 rounded-full", metric.dotClassName)}
                       />
                       <span>{metric.description}</span>
                     </div>
@@ -159,10 +157,10 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
           </div>
 
           {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => (
+            Array.from({ length: 3 }).map((_, index) => (
               <div
-                key={i}
-                className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-white/5"
+                key={index}
+                className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 p-4"
               >
                 <div className="flex items-center gap-4">
                   <Skeleton className="h-10 w-10 rounded-full bg-white/10" />
@@ -175,30 +173,29 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
               </div>
             ))
           ) : devices.length > 0 ? (
-            devices.map((device, i) => (
+            devices.map((device, index) => (
               <motion.div
+                key={device.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
-                key={device.id}
-                className="glass-card rounded-xl overflow-hidden relative group"
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="glass-card group relative overflow-hidden rounded-xl"
               >
-                {/* Highlight bar left */}
                 <div
                   className={cn(
-                    "absolute left-0 top-0 bottom-0 w-1 transition-colors duration-300",
+                    "absolute bottom-0 left-0 top-0 w-1 transition-colors duration-300",
                     device.is_on
                       ? "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
                       : "bg-transparent group-hover:bg-white/10",
                   )}
                 />
 
-                <div className="p-4 flex flex-col">
-                  <div className="flex items-center justify-between mb-3 pl-2">
+                <div className="flex flex-col p-4">
+                  <div className="mb-3 flex items-center justify-between pl-2">
                     <div className="flex items-center gap-3">
                       <div
                         className={cn(
-                          "p-2.5 rounded-full transition-all duration-300",
+                          "rounded-full p-2.5 transition-all duration-300",
                           device.is_on
                             ? "bg-cyan-500/20 text-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.5)]"
                             : "bg-white/5 text-white/40",
@@ -210,10 +207,10 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
                         <span className="text-sm font-bold tracking-tight text-white/90">
                           {device.name}
                         </span>
-                        <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className="mt-0.5 flex items-center gap-1.5">
                           <span
                             className={cn(
-                              "w-1.5 h-1.5 rounded-full",
+                              "h-1.5 w-1.5 rounded-full",
                               device.is_online
                                 ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"
                                 : "bg-red-500",
@@ -242,7 +239,7 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
                       />
                       <span
                         className={cn(
-                          "text-[10px] font-semibold transition-colors mr-1",
+                          "mr-1 text-[10px] font-semibold transition-colors",
                           device.is_on ? "text-cyan-400" : "text-white/30",
                         )}
                       >
@@ -251,42 +248,31 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
                     </div>
                   </div>
 
-                  {/* Power Visualization Bar */}
-                  <div className="pl-2 pr-1 mt-1">
-                    <div className="flex items-center justify-between text-[10px] text-white/50 mb-1">
+                  <div className="mt-1 pl-2 pr-1">
+                    <div className="mb-1 flex items-center justify-between text-[10px] text-white/50">
                       <div className="flex items-center gap-1">
-                        <Zap className="w-3 h-3 text-yellow-500" />
+                        <Zap className="h-3 w-3 text-yellow-500" />
                         <span>Power</span>
                       </div>
                       <span className="text-white/80">
                         {device.power ?? "0"} W
                       </span>
                     </div>
-                    <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                      <div
-                        className={cn(
-                          "h-full rounded-full transition-all duration-1000 ease-out",
-                          device.is_on
-                            ? "bg-gradient-to-r from-yellow-500/50 to-yellow-400"
-                            : "bg-transparent",
-                        )}
-                        style={{
-                          width: device.is_on
-                            ? `${Math.min((Number(device.power) || 0) / 10, 100)}%`
-                            : "0%",
-                          boxShadow: device.is_on
-                            ? "0 0 8px rgba(250,204,21,0.8)"
-                            : "none",
-                        }}
-                      />
-                    </div>
+                    <Progress
+                      value={device.is_on ? getPowerPercentage(device.power) : 0}
+                      className={cn(
+                        "h-1 bg-white/10",
+                        device.is_on &&
+                          "[&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-yellow-500/50 [&>[data-slot=progress-indicator]]:to-yellow-400 [&>[data-slot=progress-indicator]]:shadow-[0_0_8px_rgba(250,204,21,0.8)]",
+                      )}
+                    />
                   </div>
                 </div>
               </motion.div>
             ))
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center py-10 opacity-50">
-              <Monitor className="h-10 w-10 text-white/20 mb-4" />
+            <div className="flex h-full flex-col items-center justify-center py-10 text-center opacity-50">
+              <Monitor className="mb-4 h-10 w-10 text-white/20" />
               <p className="text-[11px] font-medium text-white/50">
                 No devices detected
               </p>
@@ -296,4 +282,8 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
       </div>
     </div>
   );
+}
+
+function getPowerPercentage(power: number | string | null | undefined) {
+  return Math.min((Number(power) || 0) / 10, 100);
 }

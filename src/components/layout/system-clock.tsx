@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 
+import { cn } from "@/lib/utils";
+
 interface SystemClockProps {
   className?: string;
 }
 
-export function SystemClock({ className = "" }: SystemClockProps) {
+export function SystemClock({ className }: SystemClockProps) {
   const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -26,7 +28,10 @@ export function SystemClock({ className = "" }: SystemClockProps) {
   if (!time) {
     return (
       <div
-        className={`h-[84px] w-full animate-pulse rounded-xl border border-cyan-500/20 bg-slate-950/75 ${className}`}
+        className={cn(
+          "h-[84px] w-full animate-pulse rounded-xl border border-cyan-500/20 bg-slate-950/75",
+          className,
+        )}
       />
     );
   }
@@ -47,7 +52,10 @@ export function SystemClock({ className = "" }: SystemClockProps) {
 
   return (
     <div
-      className={`inline-flex flex-col tech-card rounded-xl border border-cyan-500/20 bg-slate-950/75 px-5 py-4 backdrop-blur-lg ${className}`}
+      className={cn(
+        "tech-card inline-flex flex-col rounded-xl border border-cyan-500/20 bg-slate-950/75 px-5 py-4 backdrop-blur-lg",
+        className,
+      )}
     >
       <div className="text-[2.2rem] font-bold leading-none tracking-tight text-white tabular-nums">
         {timeString}
