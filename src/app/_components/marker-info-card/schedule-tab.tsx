@@ -2,8 +2,8 @@
 
 import { Calendar } from "lucide-react";
 import { useScheduleListQuery } from "@/hooks/api/digital-twin/use-schedule";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion } from "framer-motion";
 
 interface ScheduleTabProps {
   roomId: string;
@@ -13,50 +13,66 @@ export function ScheduleTab({ roomId }: ScheduleTabProps) {
   const { data: schedules, isLoading } = useScheduleListQuery(roomId);
 
   return (
-    <div className="h-full w-full flex flex-col">
-      <div className="flex items-center mb-3 flex-none">
-        <span className="text-sm font-semibold text-foreground">
-          Schedule in Room
+    <div className="relative w-full flex h-full flex-col overflow-hidden">
+      <div className="absolute inset-0 rounded-xl bg-slate-950" />
+
+      <div className="relative z-10 flex items-center mb-4 flex-none gap-2">
+        <Calendar className="w-4 h-4 text-cyan-400" />
+        <span className="text-xs font-semibold text-white/90">
+          Room Schedule
         </span>
       </div>
 
-      <ScrollArea className="h-[30vh] w-full">
-        <div className="flex flex-col gap-2">
+      <div className="relative z-10 flex-1 overflow-y-auto -mx-5 bg-slate-950 px-5 custom-scrollbar">
+        <div className="flex flex-col gap-3 pb-5">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-md" />
+              <Skeleton
+                key={i}
+                className="h-20 w-full rounded-xl bg-white/10"
+              />
             ))
           ) : schedules && schedules.length > 0 ? (
-            schedules.map((schedule) => (
-              <div
+            schedules.map((schedule, i) => (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
                 key={schedule.id}
-                className="flex items-center gap-2 p-2 rounded-md border w-full bg-background"
+                className="relative flex items-center"
               >
-                <div className="flex flex-col items-center justify-center h-12 rounded-md bg-muted p-2">
-                  <span className="text-[10px] text-foreground">
-                    {schedule.start_time} - {schedule.end_time}
-                  </span>
+                {/* Glass Card */}
+                <div className="w-full rounded-xl border border-cyan-500/10 bg-slate-900 p-3 flex items-start gap-4 transition-transform duration-300 hover:-translate-y-0.5">
+                  {/* Time Badge */}
+                  <div className="flex flex-col items-center justify-center min-w-[100px] h-[52px] rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 shrink-0 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-cyan-500/5 blur-md" />
+                    <span className="text-xs z-10 text-white">
+                      {schedule.start_time} - {schedule.end_time}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 flex flex-col min-w-0">
+                    <span className="text-sm font-bold text-white/90 truncate mb-1">
+                      {schedule.course_name}
+                    </span>
+                    <span className="flex items-center gap-1.5 text-xs text-white/60">
+                      <span className="truncate">{schedule.lecturer_name}</span>
+                    </span>
+                  </div>
                 </div>
-                <div className="flex-1 flex flex-col">
-                  <span className="text-sm font-semibold text-foreground">
-                    {schedule.course_name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {schedule.lecturer_name}
-                  </span>
-                </div>
-              </div>
+              </motion.div>
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-              <Calendar className="h-10 w-10 text-muted-foreground/40 mb-4" />
-              <p className="text-xs text-muted-foreground">
-                No schedule in this room
+            <div className="flex flex-col items-center justify-center h-full py-10 text-center opacity-50 z-10 bg-background/50 backdrop-blur-sm rounded-xl">
+              <Calendar className="h-10 w-10 text-white/20 mb-4" />
+              <p className="text-[11px] font-medium text-white/50">
+                No schedule for today
               </p>
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

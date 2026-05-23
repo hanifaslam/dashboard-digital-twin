@@ -1,17 +1,16 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { User, Monitor, Calendar } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, Monitor, Calendar, X } from "lucide-react";
 import { useRoomShowQuery } from "@/hooks/api/digital-twin/use-room";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LecturerTab } from "./lecturer-tab";
 import { DeviceTab } from "./device-tab";
 import { ScheduleTab } from "./schedule-tab";
-import React from "react";
+import React, { useState } from "react";
 import { useAuthQuery } from "@/hooks/use-auth";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MarkerInfoCardProps {
   id: string;
@@ -20,9 +19,9 @@ interface MarkerInfoCardProps {
   className?: string;
 }
 
-function MarkerInfoCardInternal({ id, title, className }: MarkerInfoCardProps) {
+function MarkerInfoCardInternal({ id, title, onClose, className }: MarkerInfoCardProps) {
   const { data: room, isLoading: isLoadingRoom } = useRoomShowQuery(id);
-  const [activeTab, setActiveTab] = React.useState("lecturer");
+  const [activeTab, setActiveTab] = useState("lecturer");
   const { data: user } = useAuthQuery();
 
   const hasDeviceControlAccess = user?.access?.some(
@@ -30,100 +29,109 @@ function MarkerInfoCardInternal({ id, title, className }: MarkerInfoCardProps) {
   );
   const isLecturerRoom = room?.name?.toLowerCase().includes("dosen");
 
+  const tabs = [
+    { id: "lecturer", label: "Lecturer", icon: User },
+    ...(hasDeviceControlAccess ? [{ id: "device", label: "Device", icon: Monitor }] : []),
+    ...(!isLecturerRoom ? [{ id: "schedule", label: "Schedule", icon: Calendar }] : []),
+  ];
+
   return (
-    <Card
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className={cn(
-        "w-[420px] max-h-[85vh] shadow-md animate-in fade-in zoom-in duration-75 flex flex-col overflow-hidden",
-        className,
+        "w-[420px] max-h-[85vh] glass-panel rounded-xl flex flex-col overflow-hidden relative",
+        className
       )}
     >
-      <CardHeader className="flex flex-none flex-row items-start justify-between">
-        <div className="flex flex-col">
-          <CardTitle className="text-lg font-semibold">
+      {/* Decorative top bar */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500/30 via-cyan-400 to-cyan-500/30" />
+      
+      {/* Header */}
+      <div className="flex flex-row items-start justify-between p-5 pb-4 border-b border-white/10 relative">
+        <div className="flex flex-col z-10">
+          <h2 className="text-xl font-bold tracking-tight text-foreground glow-text">
             {isLoadingRoom ? (
-              <Skeleton className="h-7 w-40" />
+              <Skeleton className="h-7 w-40 bg-white/10" />
             ) : (
               room?.name || title
             )}
-          </CardTitle>
-          <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+          </h2>
+          <div className="flex items-center gap-2 text-muted-foreground/80 text-[11px] font-medium mt-1">
             {isLoadingRoom ? (
-              <Skeleton className="h-4 w-56" />
+              <Skeleton className="h-4 w-56 bg-white/10" />
             ) : (
               <>
-                <div className="">
-                  <span className="text-foreground">
-                    {room?.floor || "Lantai -"}
-                  </span>
-                </div>
-                <span>-</span>
-                <div className="flex items-center">
-                  <span className="text-foreground">
-                    {room?.building || "Gedung -"}
-                  </span>
-                </div>
+                <span className="text-foreground/90">{room?.floor || "Lantai -"}</span>
+                <span className="text-foreground/40">•</span>
+                <span className="text-foreground/90">{room?.building || "Gedung -"}</span>
               </>
             )}
           </div>
         </div>
-      </CardHeader>
-
-      <CardContent className="p-0 flex-1 flex flex-col min-h-0">
-        <Tabs
-          defaultValue="lecturer"
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full flex-1 flex flex-col min-h-0"
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-full hover:bg-white/10 text-foreground/70 hover:text-foreground transition-colors z-10"
         >
-          <TabsList className="w-full justify-start h-12 bg-transparent border-b border-border/50 rounded-none px-5 gap-6">
-            <TabsTrigger
-              value="lecturer"
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:border-x-transparent data-[state=active]:border-t-transparent rounded-none h-full px-1 gap-2 text-xs font-semibold transition-none focus:outline-none focus-visible:ring-0 focus-visible:outline-none focus-visible:border-transparent"
+          <X className="w-4 h-4" />
+        </button>
+        {/* Glow ambient effect behind header */}
+        <div className="absolute -top-10 -left-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 flex flex-col min-h-0 relative z-10">
+        {/* Tab Switcher */}
+        <div className="w-full px-5 pt-3 pb-1 border-b border-white/5">
+          <div className="flex gap-2 relative">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "relative flex-1 px-3 py-2 text-xs font-semibold transition-colors duration-200 flex items-center justify-center gap-2 rounded-md outline-none",
+                    isActive ? "text-cyan-400 font-bold" : "text-white/50 hover:text-white/80"
+                  )}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className="absolute inset-0 bg-cyan-500/15 rounded-md border border-cyan-500/25"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <Icon className="w-4 h-4 relative z-10" />
+                  <span className="relative z-10">{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="flex-1 overflow-hidden relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="h-full w-full outline-none"
             >
-              <User className="h-4 w-4" />
-              Lecturer
-            </TabsTrigger>
-            {hasDeviceControlAccess && (
-              <TabsTrigger
-                value="device"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:border-x-transparent data-[state=active]:border-t-transparent rounded-none h-full px-1 gap-2 text-xs font-semibold transition-none focus:outline-none focus-visible:ring-0 focus-visible:outline-none focus-visible:border-transparent"
-              >
-                <Monitor className="h-4 w-4" />
-                Device
-              </TabsTrigger>
-            )}
-            {!isLecturerRoom && (
-              <TabsTrigger
-                value="schedule"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:text-primary data-[state=active]:border-x-transparent data-[state=active]:border-t-transparent rounded-none h-full px-1 gap-2 text-xs font-semibold transition-none focus:outline-none focus-visible:ring-0 focus-visible:outline-none focus-visible:border-transparent"
-              >
-                <Calendar className="h-4 w-4" />
-                Schedule
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="lecturer" className="mt-0 px-5 py-2 outline-none">
-            {activeTab === "lecturer" && <LecturerTab roomId={id} />}
-          </TabsContent>
-
-          {hasDeviceControlAccess && (
-            <TabsContent value="device" className="mt-0 px-5 py-2 outline-none">
-              <DeviceTab roomId={id} />
-            </TabsContent>
-          )}
-
-          {!isLecturerRoom && (
-            <TabsContent
-              value="schedule"
-              className="mt-0 px-5 py-2 outline-none"
-            >
-              {activeTab === "schedule" && <ScheduleTab roomId={id} />}
-            </TabsContent>
-          )}
-        </Tabs>
-      </CardContent>
-    </Card>
+              {activeTab === "lecturer" && <div className="h-full p-5 overflow-hidden"><LecturerTab roomId={id} /></div>}
+              {activeTab === "device" && hasDeviceControlAccess && <div className="h-full p-5 overflow-hidden"><DeviceTab roomId={id} /></div>}
+              {activeTab === "schedule" && !isLecturerRoom && <div className="h-full p-5 overflow-hidden"><ScheduleTab roomId={id} /></div>}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 

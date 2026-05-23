@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface StatusBadgeProps {
   status: string;
@@ -11,36 +12,52 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const s = status.toUpperCase();
 
-  const statusConfig: Record<string, { color: string; label: string }> = {
+  const statusConfig: Record<string, { color: string; label: string; dot: string; glow: string }> = {
     AVAILABLE: {
-      color: "bg-green-100 text-green-700 border-green-200 hover:bg-green-100",
+      color: "bg-green-500/10 text-green-400 border-green-500/30",
+      glow: "shadow-[0_0_10px_rgba(74,222,128,0.2)]",
+      dot: "bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]",
       label: "Available",
     },
     BUSY: {
-      color: "bg-red-100 text-red-700 border-red-200 hover:bg-red-100",
-      label: "Not Available",
+      color: "bg-red-500/10 text-red-400 border-red-500/30",
+      glow: "shadow-[0_0_10px_rgba(248,113,113,0.2)]",
+      dot: "bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]",
+      label: "Busy",
     },
     OFFLINE: {
-      color: "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100",
+      color: "bg-white/5 text-white/50 border-white/10",
+      glow: "shadow-none",
+      dot: "bg-white/30",
       label: "Offline",
     },
   };
 
   const config = statusConfig[s] || {
-    color: "bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-100",
+    color: "bg-primary/10 text-primary border-primary/30",
+    glow: "shadow-[0_0_10px_var(--primary)]",
+    dot: "bg-primary shadow-[0_0_8px_var(--primary)]",
     label: status,
   };
 
   return (
-    <Badge
-      variant="outline"
-      className={cn(
-        "text-[10px] font-semibold rounded-md",
-        config.color,
-        className,
-      )}
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
-      {config.label}
-    </Badge>
+      <Badge
+        variant="outline"
+        className={cn(
+          "text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1.5 transition-all duration-300",
+          config.color,
+          config.glow,
+          className,
+        )}
+      >
+        <span className={cn("w-1.5 h-1.5 rounded-full", config.dot)} />
+        {config.label}
+      </Badge>
+    </motion.div>
   );
 }

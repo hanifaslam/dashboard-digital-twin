@@ -12,13 +12,23 @@ import { useAuth } from "@/hooks/use-auth";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, LogOut, Menu, User, UserIcon } from "lucide-react";
+import {
+  ChevronDown,
+  Cpu,
+  LogOut,
+  Menu,
+  RefreshCw,
+  User,
+  UserIcon,
+  Wifi,
+} from "lucide-react";
 import Image from "next/image";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MobileNavContext } from "./mobile-nav";
 import { useConfirm } from "../providers/confirm-provider";
 import { useAuthModal } from "@/hooks/use-auth-modal";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const router = useRouter();
@@ -41,11 +51,7 @@ export function Header() {
   const isTransparent = pathname === "/" && !isScrolled;
 
   const headerClass =
-    pathname === "/"
-      ? isScrolled
-        ? "fixed top-0 left-0 right-0 z-50 w-full bg-background/80 backdrop-blur-md shadow-sm transition-[background-color,box-shadow] duration-300 pr-[var(--removed-body-scroll-bar-size,0px)]"
-        : "fixed top-0 left-0 right-0 z-50 w-full bg-transparent transition-[background-color,box-shadow] duration-300 pr-[var(--removed-body-scroll-bar-size,0px)]"
-      : "sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md shadow-sm pr-[var(--removed-body-scroll-bar-size,0px)]";
+    "fixed top-0 left-0 right-0 z-50 w-full bg-slate-950/80 backdrop-blur-md border-b border-cyan-500/15 shadow-[0_4px_30px_rgba(0,0,0,0.4),0_0_15px_rgba(6,182,212,0.03)] transition-all duration-300 pr-[var(--removed-body-scroll-bar-size,0px)]";
 
   const handleLogout = async () => {
     const result = await confirm({
@@ -69,7 +75,7 @@ export function Header() {
             src="/logo.png"
             alt="Dashboard"
             fill
-            className="object-contain object-left"
+            className="object-contain object-left filter drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]"
             sizes="(min-width: 1024px) 50vw, 100vw"
             priority
           />
@@ -85,7 +91,7 @@ export function Header() {
         <div className="hidden lg:flex items-center">
           <Link
             href="/"
-            className="relative h-18 w-18 hover:opacity-80 transition-opacity"
+            className="relative h-14 w-14 hover:opacity-80 transition-opacity filter drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]"
             draggable={false}
           >
             <Image
@@ -101,41 +107,45 @@ export function Header() {
         </div>
 
         <div className="hidden lg:flex items-center gap-4">
-          {/* <div className="flex items-center gap-2">
-            {mounted && theme === 'dark' ? (
-              <Moon
-                className={`h-5 w-5 ${isTransparent ? 'text-gray-900' : 'text-muted-foreground'}`}
-              />
-            ) : (
-              <Sun
-                className={`h-5 w-5 ${isTransparent ? 'text-gray-900' : 'text-orange-500'}`}
-              />
-            )}
-            <Switch
-              checked={mounted && theme === 'dark'}
-              onCheckedChange={toggleTheme}
-              className="data-[state=checked]:bg-primary"
+          <div className="hidden xl:flex items-center gap-2">
+            <SystemStatusPill
+              icon={Cpu}
+              label="Active Devices"
+              value="8"
+              accentClassName="text-cyan-400"
             />
-          </div> */}
+            <SystemStatusPill
+              icon={Wifi}
+              label="Latency"
+              value="12 ms"
+              accentClassName="text-cyan-400"
+            />
+            <SystemStatusPill
+              icon={RefreshCw}
+              label="Last Sync"
+              value="Live"
+              accentClassName="text-emerald-400"
+            />
+          </div>
 
-          <div className="h-8 w-px bg-border" />
+          <div className="hidden xl:block h-8 w-px bg-cyan-500/20" />
 
           {isLoading ? (
             <div className="flex items-center gap-3">
               <div
                 className={`h-9 w-9 rounded-full animate-pulse ${
-                  isTransparent ? "bg-gray-300/50" : "bg-muted"
+                  isTransparent ? "bg-cyan-500/20" : "bg-muted"
                 }`}
               />
               <div className="flex flex-col gap-1">
                 <div
                   className={`h-3 w-16 rounded animate-pulse ${
-                    isTransparent ? "bg-gray-300/50" : "bg-muted"
+                    isTransparent ? "bg-cyan-500/20" : "bg-muted"
                   }`}
                 />
                 <div
                   className={`h-2 w-12 rounded animate-pulse ${
-                    isTransparent ? "bg-gray-300/40" : "bg-muted/70"
+                    isTransparent ? "bg-cyan-500/10" : "bg-muted/70"
                   }`}
                 />
               </div>
@@ -145,32 +155,37 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className={`flex items-center gap-2 px-3 hover:bg-transparent ${isTransparent ? "text-white hover:text-primary" : ""}`}
+                  className="flex items-center gap-2.5 pl-2.5 pr-4 h-10 hover:bg-cyan-500/10 bg-slate-950/60 backdrop-blur-md rounded-lg text-cyan-400 transition-all duration-300"
                 >
-                  <Avatar className="h-8 w-8 border border-primary/20">
+                  <Avatar className="h-8 w-8 border border-cyan-500/30 shadow-[0_0_8px_rgba(6,182,212,0.2)]">
                     <AvatarImage
                       src={user.picture || undefined}
                       alt={user.name}
                     />
-                    <AvatarFallback className="bg-primary/10">
-                      <User className="h-4 w-4 text-primary" />
+                    <AvatarFallback className="bg-cyan-500/10">
+                      <User className="h-4 w-4 text-cyan-400" />
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium text-primary">{user.name}</span>
-                  <ChevronDown className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-slate-100 hover:text-white transition-colors text-xs">
+                    {user.name}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-cyan-400/80" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent
+                align="end"
+                className="w-48 bg-slate-950/90 backdrop-blur-md border border-cyan-500/20 text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+              >
                 <DropdownMenuItem
-                  className="text-foreground focus:text-primary cursor-pointer"
+                  className="text-xs hover:bg-cyan-500/10 focus:bg-cyan-500/10 focus:text-cyan-400 cursor-pointer font-medium"
                   onClick={() => router.push("/profile/profile")}
                 >
-                  <UserIcon className="h-4 w-4 mr-2" />
+                  <UserIcon className="h-4 w-4 mr-2 text-cyan-400" />
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="text-destructive focus:text-destructive cursor-pointer"
+                  className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400 cursor-pointer text-xs font-medium"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
@@ -181,16 +196,40 @@ export function Header() {
             <div className="flex items-center gap-2">
               <Button
                 variant={"outline"}
-                className="bg-primary text-white hover:text-white hover:bg-primary/90 transition-all px-6 h-9"
+                className="bg-cyan-500 border border-cyan-400 text-slate-950 hover:text-white hover:bg-transparent hover:border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all px-6 h-9 font-semibold text-xs"
                 onClick={() => authModal.open("login")}
               >
-                Login
+                Connect
               </Button>
             </div>
           )}
         </div>
       </div>
     </header>
+  );
+}
+
+function SystemStatusPill({
+  icon: Icon,
+  label,
+  value,
+  accentClassName,
+}: {
+  icon: typeof Cpu;
+  label: string;
+  value: string;
+  accentClassName?: string;
+}) {
+  return (
+    <div className="flex h-10 items-center gap-2 rounded-lg border border-cyan-500/15 bg-slate-950/60 px-3 backdrop-blur-md shadow-[inset_0_0_10px_rgba(6,182,212,0.04)]">
+      <Icon className={cn("h-3.5 w-3.5", accentClassName)} />
+      <div className="flex flex-col leading-none">
+        <span className="text-[9px] font-medium text-white/45">{label}</span>
+        <span className="mt-1 text-[11px] font-semibold text-white">
+          {value}
+        </span>
+      </div>
+    </div>
   );
 }
 
