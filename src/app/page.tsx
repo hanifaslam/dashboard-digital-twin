@@ -15,7 +15,10 @@ import {
 } from "@/app/_components/dashboard/dashboard-config";
 import { EnergyMonitoringCard } from "@/app/_components/dashboard/energy-monitoring-card";
 import { RoomDirectoryPanel } from "@/app/_components/dashboard/room-directory-panel";
-import { buildSparklinePoints, createRealtimeTick } from "@/app/_components/dashboard/dashboard-utils";
+import {
+  buildSparklinePoints,
+  createRealtimeTick,
+} from "@/app/_components/dashboard/dashboard-utils";
 import { WeatherSummaryCard } from "@/app/_components/weather-summary-card";
 import { SystemClock } from "@/components/layout/system-clock";
 import SceneViewer from "@/components/three/scene-viewer";
@@ -167,3 +170,5 @@ export default function Home() {
     </main>
   );
 }
+
+// test build
