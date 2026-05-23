@@ -160,7 +160,7 @@ function LoginForm() {
       <div className="flex justify-end mb-4">
         <Link
           href="/forgot-password"
-          className="p-0 h-auto text-sm text-primary hover:text-primary/80"
+          className="h-auto p-0 text-sm text-cyan-400 transition-colors hover:text-cyan-300"
         >
           Forgot Password
         </Link>
@@ -169,7 +169,7 @@ function LoginForm() {
       <Button
         type="submit"
         variant="default"
-        className="hover:bg-primary/90 border-primary/90 bg-primary w-full border p-2 text-white transition-colors font-semibold h-10"
+        className="h-10 w-full border border-cyan-500/20 bg-slate-950/60 p-2 font-semibold text-white transition-colors hover:border-cyan-500/40 hover:bg-cyan-500/10"
         disabled={loginMutation.isPending}
       >
         {loginMutation.isPending ? (

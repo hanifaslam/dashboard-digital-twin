@@ -75,7 +75,7 @@ export function Header() {
             src="/logo.png"
             alt="Dashboard"
             fill
-            className="object-contain object-left filter drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]"
+            className="object-contain object-left"
             sizes="(min-width: 1024px) 50vw, 100vw"
             priority
           />
@@ -91,7 +91,7 @@ export function Header() {
         <div className="hidden lg:flex items-center">
           <Link
             href="/"
-            className="relative h-14 w-14 hover:opacity-80 transition-opacity filter drop-shadow-[0_0_10px_rgba(6,182,212,0.5)]"
+            className="relative h-14 w-14 hover:opacity-80 transition-opacity"
             draggable={false}
           >
             <Image
@@ -100,7 +100,7 @@ export function Header() {
               fill
               className="object-contain object-left"
               priority
-              sizes="(min-width: 1024px) 50vw, 100vw"
+              sizes="(min-width: 1024px) 60vw, 100vw"
               draggable={false}
             />
           </Link>
@@ -157,7 +157,7 @@ export function Header() {
                   variant="ghost"
                   className="flex items-center gap-2.5 pl-2.5 pr-4 h-10 hover:bg-cyan-500/10 bg-slate-950/60 backdrop-blur-md rounded-lg text-cyan-400 transition-all duration-300"
                 >
-                  <Avatar className="h-8 w-8 border border-cyan-500/30 shadow-[0_0_8px_rgba(6,182,212,0.2)]">
+                  <Avatar className="h-8 w-8 border border-cyan-500/30">
                     <AvatarImage
                       src={user.picture || undefined}
                       alt={user.name}
@@ -196,10 +196,10 @@ export function Header() {
             <div className="flex items-center gap-2">
               <Button
                 variant={"outline"}
-                className="bg-cyan-500 border border-cyan-400 text-slate-950 hover:text-white hover:bg-transparent hover:border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all px-6 h-9 font-semibold text-xs"
+                className="h-9 border border-cyan-500/20 bg-slate-950/60 px-6 text-xs font-semibold text-white transition-all hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-white"
                 onClick={() => authModal.open("login")}
               >
-                Connect
+                Login
               </Button>
             </div>
           )}
@@ -221,10 +221,10 @@ function SystemStatusPill({
   accentClassName?: string;
 }) {
   return (
-    <div className="flex h-10 items-center gap-2 rounded-lg border border-cyan-500/15 bg-slate-950/60 px-3 backdrop-blur-md shadow-[inset_0_0_10px_rgba(6,182,212,0.04)]">
+    <div className="flex h-10 items-center gap-2 rounded-lg border border-cyan-500/15 bg-slate-950/60 px-3 backdrop-blur-md">
       <Icon className={cn("h-3.5 w-3.5", accentClassName)} />
       <div className="flex flex-col leading-none">
-        <span className="text-[9px] font-medium text-white/45">{label}</span>
+        <span className="text-[9px] font-medium text-white/55">{label}</span>
         <span className="mt-1 text-[11px] font-semibold text-white">
           {value}
         </span>
