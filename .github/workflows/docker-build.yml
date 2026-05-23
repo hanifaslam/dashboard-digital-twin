@@ -34,6 +34,12 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
             NEXT_PUBLIC_DISABLE_CSRF=${{ vars.NEXT_PUBLIC_DISABLE_CSRF }}
+            NEXT_PUBLIC_ENABLE_MARKER_TOOL=${{ vars.NEXT_PUBLIC_ENABLE_MARKER_TOOL }}
+            NEXT_PUBLIC_WEATHER_API_URL=${{ vars.NEXT_PUBLIC_WEATHER_API_URL }}
+            NEXT_PUBLIC_WEATHER_CITY=${{ vars.NEXT_PUBLIC_WEATHER_CITY }}
+            NEXT_PUBLIC_WEATHER_LATITUDE=${{ vars.NEXT_PUBLIC_WEATHER_LATITUDE }}
+            NEXT_PUBLIC_WEATHER_LONGITUDE=${{ vars.NEXT_PUBLIC_WEATHER_LONGITUDE }}
+            NEXT_PUBLIC_WEATHER_TIMEZONE=${{ vars.NEXT_PUBLIC_WEATHER_TIMEZONE }}
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:staging
