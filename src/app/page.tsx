@@ -1,53 +1,66 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { MarkerInfoCard } from "@/app/_components/marker-info-card";
 import { ActivityLogBar } from "@/app/_components/dashboard/activity-log-bar";
 import { BuildingSelector } from "@/app/_components/dashboard/building-selector";
 import {
-  BUILDINGS,
-  INITIAL_EVENT_LOGS,
   INITIAL_MARKERS,
-  INITIAL_POWER_LOAD_HISTORY,
-  type BuildingId,
   type RoomFilterId,
 } from "@/app/_components/dashboard/dashboard-config";
 import { EnergyMonitoringCard } from "@/app/_components/dashboard/energy-monitoring-card";
 import { RoomDirectoryPanel } from "@/app/_components/dashboard/room-directory-panel";
-import {
-  buildSparklinePoints,
-  createRealtimeTick,
-} from "@/app/_components/dashboard/dashboard-utils";
+import { buildSparklinePoints } from "@/app/_components/dashboard/dashboard-utils";
 import { WeatherSummaryCard } from "@/app/_components/weather-summary-card";
 import { SystemClock } from "@/components/layout/system-clock";
+import {
+  useDashboardBuildingsQuery,
+  useEnergyMonitoringSummaryQuery,
+  useLiveActivityLogQuery,
+} from "@/hooks/api/use-dashboard";
+import { useDashboardRealtime } from "@/hooks/api/socket/use-dashboard-realtime";
 import SceneViewer from "@/components/three/scene-viewer";
 import { cn } from "@/lib/utils";
 
+const DEFAULT_SCENE_BUILDING_ID = "cmnb91ftx000fmsbcgrg8qav7";
+
 export default function Home() {
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(
+    null,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [selectedBuilding, setSelectedBuilding] =
-    useState<BuildingId>("gedung-sb");
   const [activeFilter, setActiveFilter] = useState<RoomFilterId>("ALL");
-  const [powerLoadHistory, setPowerLoadHistory] = useState<number[]>(
-    INITIAL_POWER_LOAD_HISTORY,
-  );
-  const [eventLogs, setEventLogs] = useState<string[]>(INITIAL_EVENT_LOGS);
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      const { currentLoad, log } = createRealtimeTick();
+  const { data: buildings = [], isLoading: isBuildingsLoading } =
+    useDashboardBuildingsQuery();
+  const activeBuildingId = useMemo(() => {
+    if (
+      selectedBuildingId &&
+      buildings.some((building) => building.id === selectedBuildingId)
+    ) {
+      return selectedBuildingId;
+    }
 
-      setPowerLoadHistory((previousHistory) => [
-        ...previousHistory.slice(1),
-        currentLoad,
-      ]);
-      setEventLogs((previousLogs) => [log, ...previousLogs.slice(0, 15)]);
-    }, 4000);
+    if (
+      buildings.some(
+        (building) => building.id === DEFAULT_SCENE_BUILDING_ID,
+      )
+    ) {
+      return DEFAULT_SCENE_BUILDING_ID;
+    }
 
-    return () => window.clearInterval(timer);
-  }, []);
+    return buildings[0]?.id ?? null;
+  }, [buildings, selectedBuildingId]);
+  const { data: energySummary, isLoading: isEnergySummaryLoading } =
+    useEnergyMonitoringSummaryQuery(activeBuildingId);
+  const { data: activityLogs = [] } = useLiveActivityLogQuery(20);
+
+  useDashboardRealtime({
+    buildingId: activeBuildingId,
+    activityLimit: 20,
+  });
 
   const filteredMarkers = useMemo(() => {
     return INITIAL_MARKERS.filter((marker) => {
@@ -74,13 +87,16 @@ export default function Home() {
     });
   }, [activeFilter, searchQuery]);
 
-  const currentPower = powerLoadHistory[powerLoadHistory.length - 1];
-  const activeBuildingLabel =
-    BUILDINGS.find((building) => building.id === selectedBuilding)?.label ??
-    "Gedung SB";
   const chartPoints = useMemo(
-    () => buildSparklinePoints(powerLoadHistory),
-    [powerLoadHistory],
+    () =>
+      buildSparklinePoints(
+        energySummary?.trend.map((item) => item.total_power) ?? [],
+      ),
+    [energySummary?.trend],
+  );
+  const activeBuilding = useMemo(
+    () => buildings.find((building) => building.id === activeBuildingId) ?? null,
+    [activeBuildingId, buildings],
   );
 
   const handleRoomSelect = (roomId: string) => {
@@ -89,10 +105,19 @@ export default function Home() {
     );
   };
 
-  const handleBuildingChange = (buildingId: BuildingId) => {
-    setSelectedBuilding(buildingId);
+  const handleBuildingChange = (buildingId: string) => {
+    setSelectedBuildingId(buildingId);
     setSelectedRoomId(null);
   };
+
+  const lastUpdatedLabel = energySummary?.last_updated_at
+    ? new Date(energySummary.last_updated_at).toLocaleTimeString("en-US", {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : null;
 
   return (
     <main className="relative mt-16 h-[calc(100vh-64px)] w-full overflow-hidden bg-slate-950 lg:mt-20 lg:h-[calc(100vh-80px)]">
@@ -110,7 +135,8 @@ export default function Home() {
 
       <div className="absolute left-1/2 top-4 z-20 hidden -translate-x-1/2 lg:block">
         <BuildingSelector
-          selectedBuilding={selectedBuilding}
+          buildings={buildings}
+          selectedBuilding={activeBuildingId}
           onSelect={handleBuildingChange}
         />
       </div>
@@ -146,15 +172,27 @@ export default function Home() {
         {!selectedRoomId && (
           <div className="w-80 self-end shrink-0 animate-in fade-in slide-in-from-right-8 duration-300">
             <EnergyMonitoringCard
-              buildingLabel={activeBuildingLabel}
-              currentPower={currentPower}
+              buildingLabel={
+                energySummary?.building_name ??
+                activeBuilding?.name ??
+                (isBuildingsLoading ? "Loading building..." : "No building selected")
+              }
+              currentPowerLabel={energySummary?.current_active_demand_label}
+              currentPowerWatts={energySummary?.current_active_demand_watts}
+              changePercent={energySummary?.change_percent_vs_average}
               chartPoints={chartPoints}
+              trendWindowSeconds={energySummary?.trend_window_seconds}
+              lastUpdatedAt={lastUpdatedLabel}
+              isLoading={
+                isEnergySummaryLoading ||
+                (isBuildingsLoading && !activeBuildingId)
+              }
             />
           </div>
         )}
 
         {selectedRoomId ? (
-          <div className="tech-card flex h-[calc(100vh-120px)] flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-lg backdrop-blur-xl animate-in slide-in-from-right duration-350">
+          <div className="tech-card animate-in slide-in-from-right duration-350 flex h-[calc(100vh-120px)] flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-lg backdrop-blur-xl">
             <MarkerInfoCard
               id={selectedRoomId}
               title={
@@ -169,7 +207,7 @@ export default function Home() {
       </div>
 
       <div className="pointer-events-auto absolute bottom-4 left-4 right-4 z-20">
-        <ActivityLogBar latestLog={eventLogs[0]} />
+        <ActivityLogBar latestLog={activityLogs[0] ?? null} />
       </div>
     </main>
   );

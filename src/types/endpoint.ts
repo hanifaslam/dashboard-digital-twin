@@ -22,4 +22,10 @@ export const API_ENDPOINT = {
       CONTROL: "devices/:id/control",
     },
   },
+  DASHBOARD: {
+    BUILDINGS: "/dashboard/buildings",
+    DEVICE_LIVE_SUMMARY: "/dashboard/device-live-summary",
+    ENERGY_MONITORING_SUMMARY: "/dashboard/energy-monitoring-summary",
+    LIVE_ACTIVITY_LOG: "/dashboard/live-activity-log",
+  },
 };

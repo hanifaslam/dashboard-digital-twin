@@ -1,8 +1,10 @@
 "use client";
 
-import { LIVE_LOG_TEMPLATES } from "./dashboard-config";
-
 export function buildSparklinePoints(history: number[]) {
+  if (history.length < 2) {
+    return "";
+  }
+
   const width = 300;
   const height = 80;
   const maxVal = Math.max(...history, 280);
@@ -17,18 +19,4 @@ export function buildSparklinePoints(history: number[]) {
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(" ");
-}
-
-export function createRealtimeTick() {
-  const currentLoad = Math.floor(160 + Math.random() * 90);
-  const template =
-    LIVE_LOG_TEMPLATES[Math.floor(Math.random() * LIVE_LOG_TEMPLATES.length)];
-  const timeString = new Date().toLocaleTimeString("en-US", {
-    hour12: false,
-  });
-
-  return {
-    currentLoad,
-    log: `[${timeString}] ${template(currentLoad)}`,
-  };
 }

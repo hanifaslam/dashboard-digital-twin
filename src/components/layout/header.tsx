@@ -29,6 +29,11 @@ import { MobileNavContext } from "./mobile-nav";
 import { useConfirm } from "../providers/confirm-provider";
 import { useAuthModal } from "@/hooks/use-auth-modal";
 import { cn } from "@/lib/utils";
+import { useDeviceLiveSummaryQuery } from "@/hooks/api/use-dashboard";
+import { socket } from "@/lib/socket";
+import { useQueryClient } from "@tanstack/react-query";
+import { dashboardQueryKeys } from "@/hooks/api/use-dashboard";
+import type { DeviceLiveSummary } from "@/types/dashboard";
 
 export function Header() {
   const router = useRouter();
@@ -37,6 +42,8 @@ export function Header() {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   const confirm = useConfirm();
+  const queryClient = useQueryClient();
+  const { data: deviceLiveSummary } = useDeviceLiveSummaryQuery();
 
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -47,6 +54,25 @@ export function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    const handleDeviceLiveSummary = (payload: DeviceLiveSummary) => {
+      queryClient.setQueryData(
+        dashboardQueryKeys.deviceLiveSummary(),
+        payload,
+      );
+    };
+
+    socket.on("device-live-summary:update", handleDeviceLiveSummary);
+
+    return () => {
+      socket.off("device-live-summary:update", handleDeviceLiveSummary);
+    };
+  }, [queryClient]);
 
   const isTransparent = pathname === "/" && !isScrolled;
 
@@ -111,19 +137,19 @@ export function Header() {
             <SystemStatusPill
               icon={Cpu}
               label="Active Devices"
-              value="8"
+              value={`${deviceLiveSummary?.active_devices ?? 0}`}
               accentClassName="text-cyan-400"
             />
             <SystemStatusPill
               icon={Wifi}
               label="Latency"
-              value="12 ms"
+              value={deviceLiveSummary?.latency ?? "-"}
               accentClassName="text-cyan-400"
             />
             <SystemStatusPill
               icon={RefreshCw}
               label="Last Sync"
-              value="Live"
+              value={deviceLiveSummary?.last_sync ?? "-"}
               accentClassName="text-emerald-400"
             />
           </div>

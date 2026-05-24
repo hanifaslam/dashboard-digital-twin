@@ -2,8 +2,10 @@
 
 import { FileText } from "lucide-react";
 
+import type { ActivityLogItem } from "@/types/dashboard";
+
 interface ActivityLogBarProps {
-  latestLog?: string;
+  latestLog?: ActivityLogItem | null;
 }
 
 export function ActivityLogBar({ latestLog }: ActivityLogBarProps) {
@@ -23,7 +25,9 @@ export function ActivityLogBar({ latestLog }: ActivityLogBarProps) {
           <div className="flex items-center gap-2 animate-in slide-in-from-bottom-[8px] duration-300">
             <span className="select-none font-extrabold text-cyan-400">▶</span>
             <span className="select-all">
-              {latestLog ?? "Waiting for telemetry updates..."}
+              {latestLog
+                ? `[${latestLog.time_label}] ${latestLog.message}`
+                : "Waiting for telemetry updates..."}
             </span>
           </div>
         </div>
@@ -31,7 +35,7 @@ export function ActivityLogBar({ latestLog }: ActivityLogBarProps) {
 
       <div className="flex shrink-0 items-center gap-2 text-[9px] text-cyan-500/50">
         <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-        <span>Gateway connected</span>
+        <span>{latestLog?.category ?? "Realtime stream active"}</span>
       </div>
     </div>
   );
