@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { User, BookOpen, Clock } from "lucide-react";
 import { useLecturerListQuery } from "@/hooks/api/digital-twin/use-lecturer";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import SearchInput from "@/components/common/input/search-input";
 import { StatusBadge } from "./status-badge";
 import { motion } from "framer-motion";
 
@@ -12,15 +14,23 @@ interface LecturerTabProps {
 }
 
 export function LecturerTab({ roomId }: LecturerTabProps) {
-  const { data: lecturers, isLoading } = useLecturerListQuery(roomId);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { data: lecturers, isLoading } = useLecturerListQuery(roomId, searchQuery);
 
   return (
     <div className="w-full flex flex-col h-full overflow-hidden">
-      <div className="flex items-center mb-4 flex-none gap-2">
-        <User className="w-4 h-4 text-cyan-400" />
-        <span className="text-xs font-semibold text-white/90">
-          Lecturer Status
-        </span>
+      <div className="flex flex-col gap-3 mb-4 flex-none">
+        <div className="flex items-center gap-2">
+          <User className="w-4 h-4 text-cyan-400" />
+          <span className="text-xs font-semibold text-white/90">
+            Lecturer Status
+          </span>
+        </div>
+        <SearchInput 
+          placeholder="Search lecturer..." 
+          onSearch={setSearchQuery} 
+          className="w-full"
+        />
       </div>
 
       <div className="flex-1 overflow-y-auto -mx-5 px-5 custom-scrollbar">

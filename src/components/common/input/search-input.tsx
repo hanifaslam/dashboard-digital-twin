@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { SearchIcon, X } from 'lucide-react'
 import { useState } from 'react'
+import { useDebouncedCallback } from 'use-debounce'
 
 interface SearchInputProps {
   placeholder?: string
@@ -23,15 +24,21 @@ export default function SearchInput({
   const resolvedPlaceholder = placeholder ?? 'Search...'
   const [searchInput, setSearchInput] = useState(value || '')
 
+  const debouncedSearch = useDebouncedCallback((val: string) => {
+    onSearch(val)
+  }, 500)
+
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       onSearch(searchInput)
+      debouncedSearch.cancel()
     }
   }
 
   const handleClear = () => {
     setSearchInput('')
     onSearch('')
+    debouncedSearch.cancel()
   }
 
   return (
@@ -45,6 +52,7 @@ export default function SearchInput({
         value={searchInput}
         onChange={(e) => {
           setSearchInput(e.target.value)
+          debouncedSearch(e.target.value)
           if (onChange) onChange(e.target.value)
         }}
         onKeyDown={handleSearch}

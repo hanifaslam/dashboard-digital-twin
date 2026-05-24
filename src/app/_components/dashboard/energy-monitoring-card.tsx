@@ -51,11 +51,22 @@ export function EnergyMonitoringCard({
         >
           <defs>
             <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="oklch(0.72 0.17 195)" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="oklch(0.72 0.17 195)" stopOpacity="0" />
+              <stop
+                offset="0%"
+                stopColor="oklch(0.72 0.17 195)"
+                stopOpacity="0.45"
+              />
+              <stop
+                offset="100%"
+                stopColor="oklch(0.72 0.17 195)"
+                stopOpacity="0"
+              />
             </linearGradient>
           </defs>
-          <path d={`M 0,80 L ${chartPoints} L 300,80 Z`} fill="url(#chartGlow)" />
+          <path
+            d={`M 0,80 L ${chartPoints} L 300,80 Z`}
+            fill="url(#chartGlow)"
+          />
           <polyline
             fill="none"
             stroke="oklch(0.72 0.17 195)"

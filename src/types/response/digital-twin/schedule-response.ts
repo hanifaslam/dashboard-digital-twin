@@ -5,4 +5,5 @@ export interface ScheduleResponse {
   start_time: string
   end_time: string
   lecturer_name: string
+  is_active?: boolean
 }

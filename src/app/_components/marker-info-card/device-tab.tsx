@@ -185,7 +185,7 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
                   className={cn(
                     "absolute bottom-0 left-0 top-0 w-1 transition-colors duration-300",
                     device.is_on
-                      ? "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                      ? "bg-cyan-400"
                       : "bg-transparent group-hover:bg-white/10",
                   )}
                 />

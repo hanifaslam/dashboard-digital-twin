@@ -3,13 +3,13 @@ import { LecturerResponse } from '@/types/response/digital-twin/lecturer-respons
 import { useQuery } from '@tanstack/react-query'
 
 export const LECTURER_QUERY_KEY = {
-  list: (id: string) => ['lecturer', 'list', id] as const
+  list: (id: string, q?: string) => ['lecturer', 'list', id, q] as const
 }
 
-export function useLecturerListQuery(id: string) {
+export function useLecturerListQuery(id: string, q?: string) {
   return useQuery({
-    queryKey: LECTURER_QUERY_KEY.list(id),
-    queryFn: () => LecturerService.list(id),
+    queryKey: LECTURER_QUERY_KEY.list(id, q),
+    queryFn: () => LecturerService.list(id, q),
     enabled: !!id,
     select: (res) => res.data as LecturerResponse[]
   })

@@ -143,14 +143,18 @@ export default function Home() {
           selectedRoomId ? "w-[380px]" : "w-80",
         )}
       >
-        <EnergyMonitoringCard
-          buildingLabel={activeBuildingLabel}
-          currentPower={currentPower}
-          chartPoints={chartPoints}
-        />
+        {!selectedRoomId && (
+          <div className="w-80 self-end shrink-0 animate-in fade-in slide-in-from-right-8 duration-300">
+            <EnergyMonitoringCard
+              buildingLabel={activeBuildingLabel}
+              currentPower={currentPower}
+              chartPoints={chartPoints}
+            />
+          </div>
+        )}
 
         {selectedRoomId ? (
-          <div className="tech-card flex h-[calc(100vh-380px)] flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-[0_0_30px_rgba(6,182,212,0.25)] backdrop-blur-xl animate-in slide-in-from-right duration-350">
+          <div className="tech-card flex h-[calc(100vh-120px)] flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-lg backdrop-blur-xl animate-in slide-in-from-right duration-350">
             <MarkerInfoCard
               id={selectedRoomId}
               title={

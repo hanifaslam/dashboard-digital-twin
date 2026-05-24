@@ -37,12 +37,15 @@ function toTitleCase(value: string) {
 
 export const WeatherService = {
   async getSummary(): Promise<WeatherSummary> {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_WEATHER_API_URL ?? "https://api.open-meteo.com/v1/forecast"
-    const latitude = process.env.NEXT_PUBLIC_WEATHER_LATITUDE ?? "-7.7956"
-    const longitude = process.env.NEXT_PUBLIC_WEATHER_LONGITUDE ?? "110.3695"
-    const timezone = process.env.NEXT_PUBLIC_WEATHER_TIMEZONE ?? "Asia/Jakarta"
-    const city = process.env.NEXT_PUBLIC_WEATHER_CITY ?? "Yogyakarta"
+    const baseUrl = process.env.NEXT_PUBLIC_WEATHER_API_URL
+    const latitude = process.env.NEXT_PUBLIC_WEATHER_LATITUDE
+    const longitude = process.env.NEXT_PUBLIC_WEATHER_LONGITUDE
+    const timezone = process.env.NEXT_PUBLIC_WEATHER_TIMEZONE
+    const city = process.env.NEXT_PUBLIC_WEATHER_CITY
+
+    if (!baseUrl || !latitude || !longitude || !timezone || !city) {
+      throw new Error("Weather environment variables are not configured")
+    }
 
     const url = new URL(baseUrl)
     url.searchParams.set("latitude", latitude)

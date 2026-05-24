@@ -56,11 +56,9 @@ function MarkerInfoCardInternal({
         className,
       )}
     >
-      <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-cyan-500/30 via-cyan-400 to-cyan-500/30" />
-
       <div className="relative flex flex-row items-start justify-between border-b border-white/10 p-5 pb-4">
         <div className="z-10 flex flex-col">
-          <h2 className="glow-text text-xl font-bold tracking-tight text-foreground">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
             {isLoadingRoom ? (
               <Skeleton className="h-7 w-40 bg-white/10" />
             ) : (
@@ -89,7 +87,6 @@ function MarkerInfoCardInternal({
         >
           <X className="h-4 w-4" />
         </button>
-        <div className="pointer-events-none absolute -left-10 -top-10 h-32 w-32 rounded-full bg-cyan-500/10 blur-3xl" />
       </div>
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">

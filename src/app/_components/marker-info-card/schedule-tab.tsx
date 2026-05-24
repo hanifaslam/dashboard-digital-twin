@@ -4,6 +4,7 @@ import { Calendar } from "lucide-react";
 import { useScheduleListQuery } from "@/hooks/api/digital-twin/use-schedule";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface ScheduleTabProps {
   roomId: string;
@@ -42,20 +43,40 @@ export function ScheduleTab({ roomId }: ScheduleTabProps) {
                 className="relative flex items-center"
               >
                 {/* Glass Card */}
-                <div className="w-full rounded-xl border border-cyan-500/10 bg-slate-900 p-3 flex items-start gap-4 transition-transform duration-300 hover:-translate-y-0.5">
+                <div className={cn(
+                  "w-full rounded-xl p-3 flex items-start gap-4 transition-transform duration-300 hover:-translate-y-0.5",
+                  schedule.is_active 
+                    ? "border border-emerald-500/50 bg-emerald-950/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]" 
+                    : "border border-cyan-500/10 bg-slate-900"
+                )}>
                   {/* Time Badge */}
-                  <div className="flex flex-col items-center justify-center min-w-[100px] h-[52px] rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 shrink-0 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-cyan-500/5 blur-md" />
-                    <span className="text-xs z-10 text-white">
+                  <div className={cn(
+                    "flex flex-col items-center justify-center min-w-[100px] h-[52px] rounded-lg border shrink-0 relative overflow-hidden",
+                    schedule.is_active
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      : "bg-cyan-500/10 border-cyan-500/20 text-cyan-400"
+                  )}>
+                    <div className={cn(
+                      "absolute inset-0 blur-md",
+                      schedule.is_active ? "bg-emerald-500/10" : "bg-cyan-500/5"
+                    )} />
+                    <span className="text-xs z-10 text-white font-medium">
                       {schedule.start_time} - {schedule.end_time}
                     </span>
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 flex flex-col min-w-0">
-                    <span className="text-sm font-bold text-white/90 truncate mb-1">
-                      {schedule.course_name}
-                    </span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-bold text-white/90 truncate">
+                        {schedule.course_name}
+                      </span>
+                      {schedule.is_active && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                          Now
+                        </span>
+                      )}
+                    </div>
                     <span className="flex items-center gap-1.5 text-xs text-white/60">
                       <span className="truncate">{schedule.lecturer_name}</span>
                     </span>
