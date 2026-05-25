@@ -70,15 +70,15 @@ export default function LoginPage() {
 
   if (isCheckingAuth) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-50/50">
-      <Card className="w-full max-w-md pt-2 shadow-lg">
+    <div className="flex h-screen items-center justify-center bg-slate-950">
+      <Card className="w-full max-w-md pt-2 rounded-2xl bg-slate-950/90 border border-cyan-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.4),0_0_15px_rgba(6,182,212,0.03)] backdrop-blur-md text-white">
         <CardHeader className="flex flex-col items-center">
           <div className="w-48 h-30 flex items-center justify-center">
             <Image
@@ -89,16 +89,16 @@ export default function LoginPage() {
               className="w-full h-full object-contain"
             />
           </div>
-          <span className="text-xl font-semibold">
-            Digital Twin Management System
+          <span className="text-xl font-semibold mt-2 text-white">
+            Digital Twin Dashboard
           </span>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
               <Field>
-                <FieldLabel className="text-sm font-normal">
-                  <span>Username</span>
+                <FieldLabel className="text-sm font-normal text-slate-300">
+                  <span>Username or Email</span>
                   <span className="text-red-500 ml-1">*</span>
                 </FieldLabel>
                 <FieldContent>
@@ -106,7 +106,7 @@ export default function LoginPage() {
                     placeholder="Enter username"
                     {...register("login")}
                     disabled={loginMutation.isPending}
-                    className="border border-gray-300 p-2 h-10"
+                    className="border border-cyan-500/20 bg-slate-900/40 p-2 h-10 text-white placeholder:text-slate-500 focus-visible:border-cyan-500/50 focus-visible:ring-cyan-500/20"
                     autoComplete="off"
                   />
                   <FieldError errors={[errors.login]} />
@@ -114,7 +114,7 @@ export default function LoginPage() {
               </Field>
 
               <Field>
-                <FieldLabel className="text-sm font-normal">
+                <FieldLabel className="text-sm font-normal text-slate-300">
                   <span>Password</span>
                   <span className="text-red-500 ml-1">*</span>
                 </FieldLabel>
@@ -124,7 +124,7 @@ export default function LoginPage() {
                     {...register("password")}
                     disabled={loginMutation.isPending}
                     autoComplete="off"
-                    className="h-10"
+                    className="border border-cyan-500/20 bg-slate-900/40 text-white placeholder:text-slate-500 focus-visible:border-cyan-500/50 focus-visible:ring-cyan-500/20 h-10"
                   />
                   <FieldError errors={[errors.password]} />
                 </FieldContent>
@@ -143,7 +143,7 @@ export default function LoginPage() {
                       />
                     )}
                   />
-                  <FieldLabel htmlFor="remember_me" className="text-sm font-normal cursor-pointer">
+                  <FieldLabel htmlFor="remember_me" className="text-sm font-normal cursor-pointer text-slate-300">
                     Remember Me
                   </FieldLabel>
                 </div>
@@ -153,7 +153,7 @@ export default function LoginPage() {
             <div className="flex justify-end mb-4">
               <Link
                 href="/forgot-password"
-                className="p-0 h-auto text-sm text-primary hover:text-primary/80"
+                className="p-0 h-auto text-sm text-cyan-400 transition-colors hover:text-cyan-300"
               >
                 Forgot Password
               </Link>
@@ -162,7 +162,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               variant="default"
-              className="hover:bg-primary/90 border-primary/90 bg-primary w-full border p-2 text-white transition-colors font-semibold h-10"
+              className="h-10 w-full border border-cyan-500/20 bg-slate-950/60 p-2 font-semibold text-white transition-colors hover:border-cyan-500/40 hover:bg-cyan-500/10"
               disabled={loginMutation.isPending || !isValid}
             >
               {loginMutation.isPending ? (

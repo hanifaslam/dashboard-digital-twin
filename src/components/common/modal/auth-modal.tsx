@@ -34,7 +34,7 @@ export function AuthModal() {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && close()} modal>
       <DialogContent
-        className="sm:max-w-[500px] p-0 rounded-2xl max-h-[90vh] overflow-hidden"
+        className="sm:max-w-[500px] p-0 rounded-2xl max-h-[90vh] overflow-hidden bg-slate-950/90 border border-cyan-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.4),0_0_15px_rgba(6,182,212,0.03)] backdrop-blur-md"
         showCloseButton={false}
       >
         <DialogTitle className="sr-only">Authentication</DialogTitle>
@@ -110,7 +110,7 @@ function LoginForm() {
               placeholder="Enter username"
               {...register("login")}
               disabled={loginMutation.isPending}
-              className="border border-gray-300 p-2 h-10"
+              className="border border-cyan-500/20 bg-slate-900/40 p-2 h-10 text-white placeholder:text-slate-500 focus-visible:border-cyan-500/50 focus-visible:ring-cyan-500/20"
               autoComplete="off"
             />
             <FieldError errors={[errors.login]} />
@@ -128,7 +128,7 @@ function LoginForm() {
               {...register("password")}
               disabled={loginMutation.isPending}
               autoComplete="off"
-              className="h-10"
+              className="border border-cyan-500/20 bg-slate-900/40 text-white placeholder:text-slate-500 focus-visible:border-cyan-500/50 focus-visible:ring-cyan-500/20 h-10"
             />
             <FieldError errors={[errors.password]} />
           </FieldContent>
@@ -149,7 +149,7 @@ function LoginForm() {
             />
             <FieldLabel
               htmlFor="remember_me_modal"
-              className="text-sm font-normal cursor-pointer"
+              className="text-sm font-normal cursor-pointer text-slate-300"
             >
               Remember Me
             </FieldLabel>

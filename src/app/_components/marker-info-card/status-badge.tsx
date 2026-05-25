@@ -12,17 +12,20 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const s = status.toUpperCase();
 
-  const statusConfig: Record<string, { color: string; label: string; dot: string; glow: string }> = {
+  const statusConfig: Record<
+    string,
+    { color: string; label: string; dot: string; glow: string }
+  > = {
     AVAILABLE: {
       color: "bg-green-500/10 text-green-400 border-green-500/30",
-      glow: "shadow-[0_0_10px_rgba(74,222,128,0.2)]",
-      dot: "bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]",
+      glow: "",
+      dot: "bg-green-400 ",
       label: "Available",
     },
     BUSY: {
       color: "bg-red-500/10 text-red-400 border-red-500/30",
-      glow: "shadow-[0_0_10px_rgba(248,113,113,0.2)]",
-      dot: "bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]",
+      glow: "",
+      dot: "bg-red-400 ",
       label: "Busy",
     },
     OFFLINE: {
@@ -35,8 +38,8 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
 
   const config = statusConfig[s] || {
     color: "bg-primary/10 text-primary border-primary/30",
-    glow: "shadow-[0_0_10px_var(--primary)]",
-    dot: "bg-primary shadow-[0_0_8px_var(--primary)]",
+    glow: "",
+    dot: "bg-primary",
     label: status,
   };
 
@@ -55,7 +58,6 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
           className,
         )}
       >
-        <span className={cn("w-1.5 h-1.5 rounded-full", config.dot)} />
         {config.label}
       </Badge>
     </motion.div>
