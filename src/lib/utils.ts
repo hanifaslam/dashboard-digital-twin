@@ -100,6 +100,22 @@ export function formatDateDDMMMYYYY(value?: string | Date): string {
   }).format(date);
 }
 
+export function formatPresentSince(value?: string | Date | null): string {
+  if (!value) return "Not Present";
+
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return "Not Present";
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+}
+
 export function extractFileName(url: string): string | null {
   try {
     let extracted = "";

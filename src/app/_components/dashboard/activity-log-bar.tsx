@@ -3,6 +3,7 @@
 import { FileText } from "lucide-react";
 
 import type { ActivityLogItem } from "@/types/dashboard";
+import { capitalize } from "@/lib/utils";
 
 interface ActivityLogBarProps {
   latestLog?: ActivityLogItem | null;
@@ -35,7 +36,11 @@ export function ActivityLogBar({ latestLog }: ActivityLogBarProps) {
 
       <div className="flex shrink-0 items-center gap-2 text-[9px] text-cyan-500/50">
         <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-        <span>{latestLog?.category ?? "Realtime stream active"}</span>
+        <span>
+          {capitalize(
+            (latestLog?.category ?? "Realtime stream active").toLowerCase(),
+          )}
+        </span>
       </div>
     </div>
   );

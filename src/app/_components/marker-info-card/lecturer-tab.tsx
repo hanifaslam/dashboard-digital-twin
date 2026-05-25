@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SearchInput from "@/components/common/input/search-input";
 import { StatusBadge } from "./status-badge";
 import { motion } from "framer-motion";
+import { formatPresentSince } from "@/lib/utils";
 
 interface LecturerTabProps {
   roomId: string;
@@ -73,7 +74,7 @@ export function LecturerTab({ roomId }: LecturerTabProps) {
                       </div>
                       <div className="flex items-center gap-1.5 text-xs text-white/60">
                         <Clock className="w-3 h-3 text-white/40" />
-                        <span>{lecturer.present_since || "Not Present"}</span>
+                        <span>{formatPresentSince(lecturer.present_since)}</span>
                       </div>
                     </div>
                   </div>
