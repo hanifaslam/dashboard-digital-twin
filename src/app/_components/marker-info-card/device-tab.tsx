@@ -1,68 +1,40 @@
 "use client";
 
-import { Droplet, Monitor, Power, Thermometer, Zap } from "lucide-react";
 import { motion } from "framer-motion";
+import { Droplet, Monitor, Power, Thermometer, Zap } from "lucide-react";
 import { toast } from "sonner";
 
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
   useControlDeviceMutation,
   useDeviceListQuery,
 } from "@/hooks/api/digital-twin/use-device";
+import { useRoomEnvironmentQuery } from "@/hooks/api/digital-twin/use-room-environment";
 import { useDeviceSocket } from "@/hooks/api/socket/use-device-socket";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { cn, parseAxiosError } from "@/lib/utils";
 import type { ListDeviceResponse } from "@/types/response/digital-twin/device-response";
+import type { RoomEnvironmentResponse } from "@/types/response/digital-twin/room-environment-response";
 
 interface DeviceTabProps {
   roomId: string;
 }
 
-const environmentMetrics = [
-  {
-    id: "temperature",
-    label: "Temperature",
-    value: "28.2",
-    unit: "°C",
-    description: "Slightly warm",
-    accent: "text-red-400",
-    indicatorClassName:
-      "[&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-amber-400 [&>[data-slot=progress-indicator]]:via-orange-400 [&>[data-slot=progress-indicator]]:to-red-400",
-    statusClassName: "text-amber-300",
-    dotClassName: "bg-amber-400",
-    iconClassName:
-      "bg-red-500/8 text-red-400/90 shadow-[0_0_12px_rgba(248,113,113,0.14)]",
-    progress: 42,
-    Icon: Thermometer,
-  },
-  {
-    id: "humidity",
-    label: "Humidity",
-    value: "68.7",
-    unit: "%",
-    description: "Normal",
-    accent: "text-blue-400",
-    indicatorClassName:
-      "[&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-sky-400 [&>[data-slot=progress-indicator]]:to-blue-500",
-    statusClassName: "text-emerald-300",
-    dotClassName: "bg-emerald-400",
-    iconClassName:
-      "bg-blue-500/8 text-blue-300/90 shadow-[0_0_12px_rgba(96,165,250,0.12)]",
-    progress: 68,
-    Icon: Droplet,
-  },
-] as const;
-
 export function DeviceTab({ roomId }: DeviceTabProps) {
-  useDeviceSocket();
+  useDeviceSocket(roomId);
 
   const { data: devicesResp, isLoading } = useDeviceListQuery({
     room_id: roomId,
   });
+  const { data: environment, isLoading: isLoadingEnvironment } =
+    useRoomEnvironmentQuery(roomId, {
+      sensor_type: "DHT22",
+    });
   const controlMutation = useControlDeviceMutation();
 
   const devices = devicesResp?.data ?? [];
+  const environmentMetrics = getEnvironmentMetrics(environment);
 
   const handleToggleControl = async (device: ListDeviceResponse) => {
     const isTurningOn = !device.is_on;
@@ -94,65 +66,95 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
           <div className="glass-card rounded-xl p-3.5 sm:p-4">
             <div className="mb-3 flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-              <span className="text-xs font-semibold text-white/90">
-                Environment Monitoring
-              </span>
+              <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-xs font-semibold text-white/90">
+                    Environment Monitoring
+                  </span>
+                </div>
+                {environment?.updated_at ? (
+                  <span className="shrink-0 text-[10px] font-medium text-white/40">
+                    {formatTelemetryTime(environment.updated_at)}
+                  </span>
+                ) : null}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-              {environmentMetrics.map((metric) => {
-                const Icon = metric.Icon;
-
-                return (
-                  <div
-                    key={metric.id}
-                    className="rounded-xl border border-white/8 bg-white/[0.03] p-3.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]"
-                  >
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                      <span className="text-[11px] font-semibold text-white/70">
-                        {metric.label}
-                      </span>
-                      <div
-                        className={cn("rounded-lg p-1.5", metric.iconClassName)}
-                      >
-                        <Icon className="h-3.5 w-3.5" strokeWidth={2.1} />
-                      </div>
-                    </div>
-
-                    <div className="mb-3">
-                      <span
-                        className={cn(
-                          "text-2xl font-bold tracking-tight",
-                          metric.accent,
-                        )}
-                      >
-                        {metric.value}
-                        <span className="text-xl">{metric.unit}</span>
-                      </span>
-                    </div>
-
-                    <Progress
-                      value={metric.progress}
-                      className={cn(
-                        "mb-2.5 h-1.5 w-full bg-white/10",
-                        metric.indicatorClassName,
-                      )}
-                    />
-
+              {isLoadingEnvironment
+                ? Array.from({ length: 2 }).map((_, index) => (
                     <div
-                      className={cn(
-                        "flex items-center gap-1.5 text-[11px] font-medium",
-                        metric.statusClassName,
-                      )}
+                      key={index}
+                      className="rounded-xl border border-white/8 bg-white/[0.03] p-3.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]"
                     >
-                      <span
-                        className={cn("h-2 w-2 rounded-full", metric.dotClassName)}
-                      />
-                      <span>{metric.description}</span>
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <Skeleton className="h-3 w-20 bg-white/10" />
+                        <Skeleton className="h-6 w-6 rounded-lg bg-white/10" />
+                      </div>
+                      <Skeleton className="mb-3 h-8 w-24 bg-white/10" />
+                      <Skeleton className="mb-2.5 h-1.5 w-full bg-white/10" />
+                      <Skeleton className="h-3 w-20 bg-white/10" />
                     </div>
-                  </div>
-                );
-              })}
+                  ))
+                : environmentMetrics.map((metric) => {
+                    const Icon = metric.Icon;
+
+                    return (
+                      <div
+                        key={metric.id}
+                        className="rounded-xl border border-white/8 bg-white/[0.03] p-3.5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)]"
+                      >
+                        <div className="mb-3 flex items-start justify-between gap-3">
+                          <span className="text-[11px] font-semibold text-white/70">
+                            {metric.label}
+                          </span>
+                          <div
+                            className={cn(
+                              "rounded-lg p-1.5",
+                              metric.iconClassName,
+                            )}
+                          >
+                            <Icon className="h-3.5 w-3.5" strokeWidth={2.1} />
+                          </div>
+                        </div>
+
+                        <div className="mb-3">
+                          <span
+                            className={cn(
+                              "text-2xl font-bold tracking-tight",
+                              metric.accent,
+                            )}
+                          >
+                            {metric.value}
+                            <span className="text-xl">{metric.unit}</span>
+                          </span>
+                        </div>
+
+                        <Progress
+                          value={metric.progress}
+                          className={cn(
+                            "mb-2.5 h-1.5 w-full bg-white/10",
+                            metric.indicatorClassName,
+                          )}
+                        />
+
+                        <div
+                          className={cn(
+                            "flex items-center gap-1.5 text-[11px] font-medium",
+                            metric.statusClassName,
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "h-2 w-2 rounded-full",
+                              metric.dotClassName,
+                            )}
+                          />
+                          <span>{metric.description}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
             </div>
           </div>
 
@@ -259,7 +261,9 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
                       </span>
                     </div>
                     <Progress
-                      value={device.is_on ? getPowerPercentage(device.power) : 0}
+                      value={
+                        device.is_on ? getPowerPercentage(device.power) : 0
+                      }
                       className={cn(
                         "h-1 bg-white/10",
                         device.is_on &&
@@ -286,4 +290,185 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
 
 function getPowerPercentage(power: number | string | null | undefined) {
   return Math.min((Number(power) || 0) / 10, 100);
+}
+
+function getEnvironmentMetrics(environment?: RoomEnvironmentResponse) {
+  const temperature = environment?.temperature ?? null;
+  const humidity = environment?.humidity ?? null;
+
+  return [
+    {
+      id: "temperature",
+      label: "Temperature",
+      value: formatEnvironmentValue(temperature),
+      unit: "°C",
+      description: getTemperatureStatus(temperature),
+      accent: "text-red-400",
+      indicatorClassName:
+        "[&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-amber-400 [&>[data-slot=progress-indicator]]:via-orange-400 [&>[data-slot=progress-indicator]]:to-red-400",
+      statusClassName: getTemperatureStatusClassName(temperature),
+      dotClassName: getTemperatureDotClassName(temperature),
+      iconClassName:
+        "bg-red-500/8 text-red-400/90 shadow-[0_0_12px_rgba(248,113,113,0.14)]",
+      progress: getTemperatureProgress(temperature),
+      Icon: Thermometer,
+    },
+    {
+      id: "humidity",
+      label: "Humidity",
+      value: formatEnvironmentValue(humidity),
+      unit: "%",
+      description: getHumidityStatus(humidity),
+      accent: "text-blue-400",
+      indicatorClassName:
+        "[&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-sky-400 [&>[data-slot=progress-indicator]]:to-blue-500",
+      statusClassName: getHumidityStatusClassName(humidity),
+      dotClassName: getHumidityDotClassName(humidity),
+      iconClassName:
+        "bg-blue-500/8 text-blue-300/90 shadow-[0_0_12px_rgba(96,165,250,0.12)]",
+      progress: getHumidityProgress(humidity),
+      Icon: Droplet,
+    },
+  ] as const;
+}
+
+function formatEnvironmentValue(value: number | null) {
+  return value == null ? "--" : value.toFixed(1);
+}
+
+function formatTelemetryTime(updatedAt: string) {
+  const date = new Date(updatedAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function getTemperatureProgress(value: number | null) {
+  if (value == null) {
+    return 0;
+  }
+
+  return Math.min(Math.max((value / 40) * 100, 0), 100);
+}
+
+function getHumidityProgress(value: number | null) {
+  if (value == null) {
+    return 0;
+  }
+
+  return Math.min(Math.max(value, 0), 100);
+}
+
+function getTemperatureStatus(value: number | null) {
+  if (value == null) {
+    return "No telemetry";
+  }
+
+  if (value < 20) {
+    return "Cool";
+  }
+
+  if (value <= 27) {
+    return "Comfortable";
+  }
+
+  if (value <= 31) {
+    return "Slightly warm";
+  }
+
+  return "Hot";
+}
+
+function getHumidityStatus(value: number | null) {
+  if (value == null) {
+    return "No telemetry";
+  }
+
+  if (value < 30) {
+    return "Dry";
+  }
+
+  if (value <= 70) {
+    return "Normal";
+  }
+
+  return "Humid";
+}
+
+function getTemperatureStatusClassName(value: number | null) {
+  if (value == null) {
+    return "text-white/40";
+  }
+
+  if (value < 20) {
+    return "text-sky-300";
+  }
+
+  if (value <= 27) {
+    return "text-emerald-300";
+  }
+
+  if (value <= 31) {
+    return "text-amber-300";
+  }
+
+  return "text-red-300";
+}
+
+function getHumidityStatusClassName(value: number | null) {
+  if (value == null) {
+    return "text-white/40";
+  }
+
+  if (value < 30) {
+    return "text-amber-300";
+  }
+
+  if (value <= 70) {
+    return "text-emerald-300";
+  }
+
+  return "text-sky-300";
+}
+
+function getTemperatureDotClassName(value: number | null) {
+  if (value == null) {
+    return "bg-white/30";
+  }
+
+  if (value < 20) {
+    return "bg-sky-400";
+  }
+
+  if (value <= 27) {
+    return "bg-emerald-400";
+  }
+
+  if (value <= 31) {
+    return "bg-amber-400";
+  }
+
+  return "bg-red-400";
+}
+
+function getHumidityDotClassName(value: number | null) {
+  if (value == null) {
+    return "bg-white/30";
+  }
+
+  if (value < 30) {
+    return "bg-amber-400";
+  }
+
+  if (value <= 70) {
+    return "bg-emerald-400";
+  }
+
+  return "bg-sky-400";
 }

@@ -17,6 +17,9 @@ export const API_ENDPOINT = {
     ROOM: {
       BASE: "dashboard/rooms/:id",
     },
+    ROOM_ENVIRONMENT: {
+      BASE: "sensors/environment/room/:roomId",
+    },
     DEVICE: {
       BASE: "devices",
       CONTROL: "devices/:id/control",
