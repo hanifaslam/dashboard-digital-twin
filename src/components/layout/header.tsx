@@ -61,10 +61,7 @@ export function Header() {
     }
 
     const handleDeviceLiveSummary = (payload: DeviceLiveSummary) => {
-      queryClient.setQueryData(
-        dashboardQueryKeys.deviceLiveSummary(),
-        payload,
-      );
+      queryClient.setQueryData(dashboardQueryKeys.deviceLiveSummary(), payload);
     };
 
     socket.on("device-live-summary:update", handleDeviceLiveSummary);
@@ -183,9 +180,9 @@ export function Header() {
                   variant="ghost"
                   className="flex items-center gap-2.5 pl-2.5 pr-4 h-10 hover:bg-cyan-500/10 bg-slate-950/60 backdrop-blur-md rounded-lg text-cyan-400 transition-all duration-300"
                 >
-                  <Avatar className="h-8 w-8 border border-cyan-500/30">
+                  <Avatar className={cn("h-8 w-8", !user.profile_picture ? "border border-cyan-500/30" : "border-none after:hidden")}>
                     <AvatarImage
-                      src={user.picture || undefined}
+                      src={user.profile_picture || undefined}
                       alt={user.name}
                     />
                     <AvatarFallback className="bg-cyan-500/10">

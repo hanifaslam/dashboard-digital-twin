@@ -29,6 +29,7 @@ export interface MeResponse {
   buildings: MeBuildingResponse[];
   access: Access[];
   picture?: string | null;
+  profile_picture?: string | null;
 }
 
 export interface GetCaptchaResponse {

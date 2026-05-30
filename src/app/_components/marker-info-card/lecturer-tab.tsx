@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { User, BookOpen, Clock } from "lucide-react";
+import { User, BookOpen, Clock, Phone, IdCard, ChevronDown } from "lucide-react";
 import { useLecturerListQuery } from "@/hooks/api/digital-twin/use-lecturer";
+import { LecturerResponse } from "@/types/response/digital-twin/lecturer-response";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import SearchInput from "@/components/common/input/search-input";
 import { StatusBadge } from "./status-badge";
-import { motion } from "framer-motion";
-import { formatPresentSince } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { formatPresentSince, cn } from "@/lib/utils";
 
 interface LecturerTabProps {
   roomId: string;
@@ -42,47 +43,7 @@ export function LecturerTab({ roomId }: LecturerTabProps) {
             ))
           ) : lecturers && lecturers.length > 0 ? (
             lecturers.map((lecturer, i) => (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
-                key={lecturer.id}
-                className="glass-card rounded-xl p-4 flex flex-col gap-3 relative overflow-hidden group"
-              >
-                {/* Accent line */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
-                <div className="flex items-start gap-4">
-                  <Avatar className="h-12 w-12 border-2 border-white/10 shadow-lg group-hover:border-cyan-500/40 transition-colors">
-                    <AvatarFallback className="bg-cyan-500/15 text-cyan-400 font-bold shadow-[inset_0_0_8px_rgba(6,182,212,0.1)]">
-                      {lecturer.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .substring(0, 2)
-                        .toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 flex flex-col min-w-0 pt-0.5">
-                    <span className="text-sm font-bold text-white/90 truncate">
-                      {lecturer.name}
-                    </span>
-                    <div className="mt-2 flex flex-col gap-1">
-                      <div className="flex items-center gap-1.5 text-xs text-white/60">
-                        <BookOpen className="w-3 h-3 text-white/40" />
-                        <span className="truncate">{lecturer.course || "No Active Course"}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-white/60">
-                        <Clock className="w-3 h-3 text-white/40" />
-                        <span>{formatPresentSince(lecturer.present_since)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-none">
-                    <StatusBadge status={lecturer.status} />
-                  </div>
-                </div>
-              </motion.div>
+              <LecturerCard key={lecturer.id} lecturer={lecturer} index={i} />
             ))
           ) : (
             <div className="flex flex-col items-center justify-center h-full py-10 text-center opacity-50">
@@ -95,5 +56,82 @@ export function LecturerTab({ roomId }: LecturerTabProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+function LecturerCard({ lecturer, index }: { lecturer: LecturerResponse; index: number }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      className="glass-card rounded-xl p-4 flex flex-col relative overflow-hidden group cursor-pointer hover:bg-white/[0.02] transition-colors"
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      <div className="flex items-start gap-4">
+        <Avatar className="h-12 w-12 border-2 border-white/10 shadow-lg group-hover:border-cyan-500/40 transition-colors">
+          <AvatarFallback className="bg-cyan-500/15 text-cyan-400 font-bold shadow-[inset_0_0_8px_rgba(6,182,212,0.1)]">
+            {lecturer.name
+              .split(" ")
+              .map((n: string) => n[0])
+              .join("")
+              .substring(0, 2)
+              .toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 flex flex-col min-w-0 pt-0.5">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-white/90 truncate flex-1">
+              {lecturer.name}
+            </span>
+            <div className="flex-none">
+              <StatusBadge status={lecturer.status} />
+            </div>
+            <ChevronDown 
+              className={cn(
+                "w-4 h-4 text-white/40 transition-transform duration-300 ml-1 flex-none",
+                isExpanded && "rotate-180"
+              )} 
+            />
+          </div>
+          <div className="mt-2 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-xs text-white/60">
+              <BookOpen className="w-3 h-3 text-white/40" />
+              <span className="truncate">{lecturer.course || "No Active Course"}</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-white/60">
+              <Clock className="w-3 h-3 text-white/40" />
+              <span>{formatPresentSince(lecturer.present_since)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-col gap-2 pt-3 mt-3 border-t border-white/10">
+              <div className="flex items-center gap-2 text-xs text-white/70">
+                <IdCard className="w-3.5 h-3.5 text-cyan-400/70" />
+                <span><span className="text-white/40">NIP:</span> {lecturer.nip || "-"}</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-white/70">
+                <Phone className="w-3.5 h-3.5 text-cyan-400/70" />
+                <span><span className="text-white/40">Phone:</span> {lecturer.phone_number || "-"}</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

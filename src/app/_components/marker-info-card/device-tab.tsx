@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Droplet, Monitor, Power, Thermometer, Zap } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +8,11 @@ import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   useControlDeviceMutation,
   useDeviceListQuery,
@@ -176,103 +182,13 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
             ))
           ) : devices.length > 0 ? (
             devices.map((device, index) => (
-              <motion.div
+              <DeviceCard
                 key={device.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="glass-card group relative overflow-hidden rounded-xl"
-              >
-                <div
-                  className={cn(
-                    "absolute bottom-0 left-0 top-0 w-1 transition-colors duration-300",
-                    device.is_on
-                      ? "bg-cyan-400"
-                      : "bg-transparent group-hover:bg-white/10",
-                  )}
-                />
-
-                <div className="flex flex-col p-4">
-                  <div className="mb-3 flex items-center justify-between pl-2">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          "rounded-full p-2.5 transition-all duration-300",
-                          device.is_on
-                            ? "bg-cyan-500/20 text-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.5)]"
-                            : "bg-white/5 text-white/40",
-                        )}
-                      >
-                        <Power className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold tracking-tight text-white/90">
-                          {device.name}
-                        </span>
-                        <div className="mt-0.5 flex items-center gap-1.5">
-                          <span
-                            className={cn(
-                              "h-1.5 w-1.5 rounded-full",
-                              device.is_online
-                                ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"
-                                : "bg-red-500",
-                            )}
-                          />
-                          <span className="text-[10px] font-medium text-white/50">
-                            {device.is_online ? "Online" : "Offline"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-1">
-                      <Switch
-                        checked={device.is_on ?? false}
-                        onCheckedChange={() => handleToggleControl(device)}
-                        disabled={
-                          !(device.is_online ?? false) ||
-                          controlMutation.isPending
-                        }
-                        className={cn(
-                          device.is_on
-                            ? "data-[state=checked]:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
-                            : "data-[state=unchecked]:bg-white/20",
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "mr-1 text-[10px] font-semibold transition-colors",
-                          device.is_on ? "text-cyan-400" : "text-white/30",
-                        )}
-                      >
-                        {device.is_on ? "Active" : "Standby"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-1 pl-2 pr-1">
-                    <div className="mb-1 flex items-center justify-between text-[10px] text-white/50">
-                      <div className="flex items-center gap-1">
-                        <Zap className="h-3 w-3 text-yellow-500" />
-                        <span>Power</span>
-                      </div>
-                      <span className="text-white/80">
-                        {device.power ?? "0"} W
-                      </span>
-                    </div>
-                    <Progress
-                      value={
-                        device.is_on ? getPowerPercentage(device.power) : 0
-                      }
-                      className={cn(
-                        "h-1 bg-white/10",
-                        device.is_on &&
-                          "[&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-yellow-500/50 [&>[data-slot=progress-indicator]]:to-yellow-400 [&>[data-slot=progress-indicator]]:shadow-[0_0_8px_rgba(250,204,21,0.8)]",
-                      )}
-                    />
-                  </div>
-                </div>
-              </motion.div>
+                device={device}
+                index={index}
+                onToggle={handleToggleControl}
+                isPending={controlMutation.isPending}
+              />
             ))
           ) : (
             <div className="flex h-full flex-col items-center justify-center py-10 text-center opacity-50">
@@ -471,4 +387,180 @@ function getHumidityDotClassName(value: number | null) {
   }
 
   return "bg-sky-400";
+}
+
+function DeviceCard({
+  device,
+  index,
+  onToggle,
+  isPending,
+}: {
+  device: ListDeviceResponse;
+  index: number;
+  onToggle: (device: ListDeviceResponse) => void;
+  isPending: boolean;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+
+    const handleScroll = () => {
+      setIsExpanded(false);
+    };
+
+    // Use capture phase to catch scroll events from any scrollable container
+    window.addEventListener("scroll", handleScroll, true);
+    return () => window.removeEventListener("scroll", handleScroll, true);
+  }, [isExpanded]);
+
+  return (
+    <Popover open={isExpanded} onOpenChange={setIsExpanded}>
+      <PopoverTrigger asChild>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.05 }}
+          className="glass-card group relative overflow-hidden rounded-xl cursor-pointer hover:bg-white/[0.02] transition-colors"
+        >
+          <div
+            className={cn(
+              "absolute bottom-0 left-0 top-0 w-1 transition-colors duration-300",
+              device.is_on
+                ? "bg-cyan-400"
+                : "bg-transparent group-hover:bg-white/10",
+            )}
+          />
+
+          <div className="flex flex-col p-4">
+            <div className="mb-3 flex items-center justify-between pl-2">
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "rounded-full p-2.5 transition-all duration-300",
+                    device.is_on
+                      ? "bg-cyan-500/20 text-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.5)]"
+                      : "bg-white/5 text-white/40",
+                  )}
+                >
+                  <Power className="h-4 w-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold tracking-tight text-white/90">
+                    {device.name}
+                  </span>
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    <span
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        device.is_online
+                          ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"
+                          : "bg-red-500",
+                      )}
+                    />
+                    <span className="text-[10px] font-medium text-white/50">
+                      {device.is_online ? "Online" : "Offline"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="flex flex-col items-end gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Switch
+                  checked={device.is_on ?? false}
+                  onCheckedChange={() => onToggle(device)}
+                  disabled={!(device.is_online ?? false) || isPending}
+                  className={cn(
+                    device.is_on
+                      ? "data-[state=checked]:bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
+                      : "data-[state=unchecked]:bg-white/20",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "mr-1 text-[10px] font-semibold transition-colors",
+                    device.is_on ? "text-cyan-400" : "text-white/30",
+                  )}
+                >
+                  {device.is_on ? "Active" : "Standby"}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-1 pl-2 pr-1">
+              <div className="mb-1 flex items-center justify-between text-[10px] text-white/50">
+                <div className="flex items-center gap-1">
+                  <Zap className="h-3 w-3 text-yellow-500" />
+                  <span>Power</span>
+                </div>
+                <span className="text-white/80">{device.power ?? "0"} W</span>
+              </div>
+              <Progress
+                value={device.is_on ? getPowerPercentage(device.power) : 0}
+                className={cn(
+                  "h-1 bg-white/10",
+                  device.is_on &&
+                    "[&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-yellow-500/50 [&>[data-slot=progress-indicator]]:to-yellow-400 [&>[data-slot=progress-indicator]]:shadow-[0_0_8px_rgba(250,204,21,0.8)]",
+                )}
+              />
+            </div>
+          </div>
+        </motion.div>
+      </PopoverTrigger>
+
+      <PopoverContent
+        side="left"
+        align="start"
+        sideOffset={40}
+        collisionPadding={80}
+        className="w-56 glass-card bg-slate-950/95 p-4 border-cyan-500/20 shadow-[0_0_20px_rgba(6,182,212,0.1)] rounded-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=left]:slide-in-from-right-4 duration-300"
+      >
+        <div className="flex flex-col gap-1 mb-3">
+          <span className="text-xs font-semibold text-cyan-400">
+            Electrical Info
+          </span>
+          <span className="text-[10px] text-white/50">{device.name}</span>
+        </div>
+        <div className="grid grid-cols-2 gap-y-4 gap-x-4">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] text-white/50">Voltage</span>
+            <span className="text-xs font-semibold text-white/90">
+              {device.voltage ?? "0"}{" "}
+              <span className="text-[10px] text-white/50">V</span>
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] text-white/50">Current</span>
+            <span className="text-xs font-semibold text-white/90">
+              {device.current ?? "0"}{" "}
+              <span className="text-[10px] text-white/50">A</span>
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] text-white/50">Energy</span>
+            <span className="text-xs font-semibold text-white/90">
+              {device.energy ?? "0"}{" "}
+              <span className="text-[10px] text-white/50">kWh</span>
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] text-white/50">Frequency</span>
+            <span className="text-xs font-semibold text-white/90">
+              {device.frequency ?? "0"}{" "}
+              <span className="text-[10px] text-white/50">Hz</span>
+            </span>
+          </div>
+          <div className="flex flex-col gap-1 col-span-2 border-t border-white/5 pt-3 mt-1">
+            <span className="text-[10px] text-white/50">Power Factor</span>
+            <span className="text-xs font-semibold text-white/90">
+              {device.power_factor ?? "0"}
+            </span>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
