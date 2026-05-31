@@ -10,6 +10,9 @@ import axios, {
 } from 'axios'
 import { toast } from 'sonner'
 
+const CLIENT_APP_ID =
+  process.env.NEXT_PUBLIC_AUTH_APP_ID || 'dashboard-digital-twin'
+
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 20000,
@@ -47,7 +50,9 @@ const processQueue = (error: AxiosError | null) => {
 
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-
+    const headers = new AxiosHeaders(config.headers)
+    headers.set('X-Client-App', CLIENT_APP_ID)
+    config.headers = headers
 
     if (
       config.method &&
@@ -57,21 +62,7 @@ axiosInstance.interceptors.request.use(
         await fetchCsrfToken()
       }
       if (csrfToken) {
-        const headers = new AxiosHeaders()
-        if (config.headers) {
-          const existing = config.headers as Record<string, unknown>
-          for (const [key, value] of Object.entries(existing)) {
-            if (value === undefined) continue
-            if (Array.isArray(value)) {
-              headers.set(
-                key,
-                value.map((v) => String(v))
-              )
-            } else {
-              headers.set(key, String(value))
-            }
-          }
-        }
+        const headers = new AxiosHeaders(config.headers)
         headers.set('X-CSRF-Token', csrfToken)
         config.headers = headers
       }
