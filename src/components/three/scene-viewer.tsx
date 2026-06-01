@@ -8,6 +8,7 @@ import { OrbitControls, Stage, useGLTF, Html } from "@react-three/drei";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { GraduationCap, Monitor, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCachedModelUrl } from "@/components/three/use-cached-model-url";
 
 export interface Marker {
   id: string;
@@ -199,6 +200,7 @@ export default function SceneViewer({
   const [debugMode, setDebugMode] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [shouldReset, setShouldReset] = useState(false);
+  const { resolvedUrl, isPreparing } = useCachedModelUrl(modelUrl);
 
   // Derive activeMarkerId directly from selectedRoomId prop to avoid hook warn triggers
   const activeMarkerId = selectedRoomId || null;
@@ -248,6 +250,7 @@ export default function SceneViewer({
         camera={{ position: [10, 0, 0], fov: 45 }}
       >
         <QueryClientProvider client={queryClient}>
+          {isPreparing && <LoadingOverlay />}
           <Suspense fallback={<LoadingOverlay />}>
             <CameraController
               selectedRoomId={selectedRoomId}
@@ -263,7 +266,9 @@ export default function SceneViewer({
               shadows={{ type: "contact", opacity: 0.7, blur: 2 }}
               adjustCamera={false}
             >
-              <Model url={modelUrl} onDebugClick={handleDebugClick} />
+              {!isPreparing && (
+                <Model url={resolvedUrl} onDebugClick={handleDebugClick} />
+              )}
 
               {/* Preview Marker (Hanya muncul jika debugMode aktif) */}
               {debugMode && previewPos && (
