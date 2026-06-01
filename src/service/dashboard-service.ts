@@ -4,6 +4,8 @@ import type {
   ActivityLogItem,
   DashboardApiResponse,
   DashboardBuilding,
+  DashboardChatbotRequest,
+  DashboardChatbotResponse,
   DeviceLiveSummary,
   EnergyMonitoringSummary,
 } from "@/types/dashboard";
@@ -46,5 +48,14 @@ export const DashboardService = {
         limit,
       },
     );
+  },
+
+  async sendChatbotMessage(payload: DashboardChatbotRequest) {
+    const response = await axiosInstance.post<DashboardChatbotResponse>(
+      API_ENDPOINT.DASHBOARD.CHATBOT,
+      payload,
+    );
+
+    return response.data;
   },
 };

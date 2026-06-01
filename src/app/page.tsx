@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { MarkerInfoCard } from "@/app/_components/marker-info-card";
 import { ActivityLogBar } from "@/app/_components/dashboard/activity-log-bar";
@@ -22,6 +23,7 @@ import {
 import { useDashboardRealtime } from "@/hooks/api/socket/use-dashboard-realtime";
 import SceneViewer from "@/components/three/scene-viewer";
 import { cn } from "@/lib/utils";
+import { useChatbot } from "@/hooks/use-chatbot";
 
 const DEFAULT_SCENE_BUILDING_ID = "cmnb91ftx000fmsbcgrg8qav7";
 
@@ -32,6 +34,15 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<RoomFilterId>("ALL");
+  const {
+    setActiveContext,
+    setIsHidden,
+    isOpen: isChatbotOpen,
+  } = useChatbot();
+
+  useEffect(() => {
+    setIsHidden(false);
+  }, [setIsHidden]);
 
   const { data: buildings = [], isLoading: isBuildingsLoading } =
     useDashboardBuildingsQuery();
@@ -99,6 +110,16 @@ export default function Home() {
     [activeBuildingId, buildings],
   );
 
+  useEffect(() => {
+    setActiveContext(activeBuildingId, selectedRoomId);
+  }, [activeBuildingId, selectedRoomId, setActiveContext]);
+
+  useEffect(() => {
+    return () => {
+      setActiveContext(null, null);
+    };
+  }, [setActiveContext]);
+
   const handleRoomSelect = (roomId: string) => {
     setSelectedRoomId((currentRoomId) =>
       currentRoomId === roomId ? null : roomId,
@@ -165,45 +186,62 @@ export default function Home() {
 
       <div
         className={cn(
-          "pointer-events-auto absolute right-4 top-4 z-20 flex flex-col gap-4 transition-all duration-300",
+          "pointer-events-auto absolute right-4 top-4 z-20 flex flex-col gap-4 transition-[width] duration-300",
           selectedRoomId ? "w-[380px]" : "w-80",
         )}
       >
-        {!selectedRoomId && (
-          <div className="w-80 self-end shrink-0 animate-in fade-in slide-in-from-right-8 duration-300">
-            <EnergyMonitoringCard
-              buildingLabel={
-                energySummary?.building_name ??
-                activeBuilding?.name ??
-                (isBuildingsLoading ? "Loading building..." : "No building selected")
-              }
-              currentPowerLabel={energySummary?.current_active_demand_label}
-              currentPowerWatts={energySummary?.current_active_demand_watts}
-              changePercent={energySummary?.change_percent_vs_average}
-              chartPoints={chartPoints}
-              trendWindowSeconds={energySummary?.trend_window_seconds}
-              lastUpdatedAt={lastUpdatedLabel}
-              isLoading={
-                isEnergySummaryLoading ||
-                (isBuildingsLoading && !activeBuildingId)
-              }
-            />
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {!selectedRoomId && (
+            <motion.div
+              key="energy-card"
+              initial={{ opacity: 0, x: 32 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 32 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="w-80 self-end shrink-0"
+            >
+              <EnergyMonitoringCard
+                buildingLabel={
+                  energySummary?.building_name ??
+                  activeBuilding?.name ??
+                  (isBuildingsLoading ? "Loading building..." : "No building selected")
+                }
+                currentPowerLabel={energySummary?.current_active_demand_label}
+                currentPowerWatts={energySummary?.current_active_demand_watts}
+                changePercent={energySummary?.change_percent_vs_average}
+                chartPoints={chartPoints}
+                trendWindowSeconds={energySummary?.trend_window_seconds}
+                lastUpdatedAt={lastUpdatedLabel}
+                isLoading={
+                  isEnergySummaryLoading ||
+                  (isBuildingsLoading && !activeBuildingId)
+                }
+                hideChart={isChatbotOpen}
+              />
+            </motion.div>
+          )}
 
-        {selectedRoomId ? (
-          <div className="tech-card animate-in slide-in-from-right duration-350 flex h-[calc(100vh-120px)] flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-lg backdrop-blur-xl">
-            <MarkerInfoCard
-              id={selectedRoomId}
-              title={
-                INITIAL_MARKERS.find((marker) => marker.id === selectedRoomId)
-                  ?.label ?? "Asset Room"
-              }
-              onClose={() => setSelectedRoomId(null)}
-              className="h-full w-full border-none bg-transparent shadow-none"
-            />
-          </div>
-        ) : null}
+          {selectedRoomId && (
+            <motion.div
+              key="marker-card"
+              initial={{ opacity: 0, x: 32 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 32 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="tech-card flex h-[calc(100vh-120px)] w-full flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-lg backdrop-blur-xl"
+            >
+              <MarkerInfoCard
+                id={selectedRoomId}
+                title={
+                  INITIAL_MARKERS.find((marker) => marker.id === selectedRoomId)
+                    ?.label ?? "Asset Room"
+                }
+                onClose={() => setSelectedRoomId(null)}
+                className="h-full w-full border-none bg-transparent shadow-none"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="pointer-events-auto absolute bottom-4 left-4 right-4 z-20">

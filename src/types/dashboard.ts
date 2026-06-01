@@ -40,3 +40,36 @@ export interface DashboardApiResponse<T> {
   metadata: Record<string, unknown>;
   data: T;
 }
+
+export interface DashboardChatbotRequest {
+  message: string;
+  building_id?: string;
+  room_id?: string;
+  session_id: string;
+}
+
+export interface DashboardChatbotContextScope {
+  building_id: string | null;
+  room_id: string | null;
+}
+
+export interface DashboardChatbotMetadata {
+  rejected?: boolean;
+  model?: string;
+  provider?: string;
+  used_memory?: boolean;
+}
+
+export interface DashboardChatbotData {
+  session_id: string;
+  reply: string;
+  intent: string;
+  context_scope: DashboardChatbotContextScope;
+}
+
+export interface DashboardChatbotResponse {
+  success: boolean;
+  message: string;
+  metadata: DashboardChatbotMetadata;
+  data: DashboardChatbotData | null;
+}

@@ -46,11 +46,7 @@ function MarkerInfoCardInternal({
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+    <div
       className={cn(
         "glass-panel relative flex max-h-[85vh] w-[420px] flex-col overflow-hidden rounded-xl",
         className,
@@ -155,7 +151,7 @@ function MarkerInfoCardInternal({
           </AnimatePresence>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

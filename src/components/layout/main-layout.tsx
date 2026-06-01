@@ -2,6 +2,7 @@
 
 import { AuthModal } from '@/components/common/modal/auth-modal'
 import { ResetPasswordHandler } from '@/components/common/modal/reset-password-handler'
+import { Chatbot } from '@/components/common/chatbot'
 import { usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { Header } from './header'
@@ -30,6 +31,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <Suspense fallback={null}>
           <ResetPasswordHandler />
         </Suspense>
+        <Chatbot />
       </div>
     </MobileNavProvider>
   )
