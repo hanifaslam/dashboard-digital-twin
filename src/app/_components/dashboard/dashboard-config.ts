@@ -18,7 +18,7 @@ export const INITIAL_MARKERS: Marker[] = [
   {
     id: "cmnb91gab000tmsbc9vp9itjb",
     position: [1.19, -1.5, 3.24],
-    label: "Room 1.1",
+    label: "SB 109",
     type: "lab",
   },
 ];

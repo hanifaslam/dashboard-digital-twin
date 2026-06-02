@@ -9,6 +9,7 @@ import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { GraduationCap, Monitor, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCachedModelUrl } from "@/components/three/use-cached-model-url";
+import { useScheduleListQuery } from "@/hooks/api/digital-twin/use-schedule";
 
 export interface Marker {
   id: string;
@@ -155,6 +156,109 @@ function CameraController({
   return null;
 }
 
+function MarkerBadge({
+  marker,
+  isActive,
+  onMarkerClick,
+}: {
+  marker: Marker;
+  isActive: boolean;
+  onMarkerClick?: (marker: Marker) => void;
+}) {
+  const { data: schedules } = useScheduleListQuery(marker.id);
+  const isOccupied = schedules?.some((s) => s.is_online);
+
+  // Dynamically pick icon
+  const isDosen =
+    marker.type === "dosen" || marker.label.toLowerCase().includes("dosen");
+  const IconComponent = isDosen ? GraduationCap : Monitor;
+
+  return (
+    <Html
+      position={marker.position}
+      distanceFactor={10}
+      center
+      zIndexRange={[10, 0]}
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          if (isActive) {
+            onMarkerClick?.({
+              id: "",
+              label: "",
+              position: [0, 0, 0],
+            });
+          } else {
+            onMarkerClick?.(marker);
+          }
+        }}
+        className="relative group/marker cursor-pointer flex items-center justify-center w-8 h-8"
+      >
+        {/* Efek Ping */}
+        <div
+          className={cn(
+            "absolute inset-0 rounded-full animate-ping opacity-20",
+            isOccupied ? "bg-red-500" : "bg-cyan-400",
+            isActive ? "scale-125" : "scale-100",
+          )}
+        />
+
+        {/* Holographic Circular Icon Badge */}
+        <div
+          className={cn(
+            "relative w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300 shadow-md backdrop-blur-md",
+            isActive
+              ? isOccupied
+                ? "bg-red-500 border-red-400 text-slate-950 shadow-[0_0_12px_rgba(239,68,68,0.8)] scale-110"
+                : "bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.8)] scale-110"
+              : isOccupied
+                ? "bg-slate-950/85 border-red-500/50 text-red-400 hover:border-red-400 hover:text-white hover:shadow-[0_0_8px_rgba(239,68,68,0.3)]"
+                : "bg-slate-950/85 border-cyan-500/30 text-cyan-400 hover:border-cyan-400 hover:text-white hover:shadow-[0_0_8px_rgba(6,182,212,0.3)]",
+          )}
+        >
+          <IconComponent className="h-3.5 w-3.5 transition-transform duration-300" />
+        </div>
+
+        {/* Label Tooltip (Selalu muncul) */}
+        <div
+          className={cn(
+            "absolute left-9 top-1/2 -translate-y-1/2 transition-all duration-300 bg-slate-950/95 backdrop-blur-md text-[9px] py-1.5 px-2.5 rounded-md border whitespace-nowrap pointer-events-none shadow-[0_4px_12px_rgba(0,0,0,0.5)]",
+            isActive
+              ? isOccupied
+                ? "opacity-100 translate-x-0 text-white border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.25)] font-bold"
+                : "opacity-100 translate-x-0 text-white border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.25)] font-bold"
+              : isOccupied
+                ? "opacity-100 translate-x-0 text-red-400 border-red-500/50 group-hover/marker:text-white group-hover/marker:border-red-400"
+                : "opacity-100 translate-x-0 text-cyan-400 border-cyan-500/30 group-hover/marker:text-white group-hover/marker:border-cyan-400",
+          )}
+        >
+          <div className="flex items-center gap-1.5">
+            {isActive && (
+              <span
+                className={cn(
+                  "w-1 h-1 rounded-full animate-pulse shrink-0",
+                  isOccupied ? "bg-red-400" : "bg-cyan-400",
+                )}
+              />
+            )}
+            <span>{marker.label}</span>
+          </div>
+
+          {/* Hover Status Info (Bawah, Absolute) */}
+          {isOccupied && (
+            <div className="absolute left-0 top-[100%] mt-1 overflow-hidden transition-all duration-300 max-h-0 opacity-0 group-hover/marker:max-h-[20px] group-hover/marker:opacity-100">
+              <span className="px-1.5 py-1 rounded text-[7.5px] bg-slate-950/95 backdrop-blur-md text-red-400 border border-red-500/30 font-bold block w-fit whitespace-nowrap shadow-md">
+                Currently in use
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </Html>
+  );
+}
+
 function LoadingOverlay() {
   return (
     <Html center>
@@ -181,6 +285,7 @@ interface SceneViewerProps {
   markers?: Marker[];
   selectedRoomId?: string | null;
   onMarkerClick?: (marker: Marker) => void;
+  buildingName?: string | null;
 }
 
 export default function SceneViewer({
@@ -188,6 +293,7 @@ export default function SceneViewer({
   markers = [],
   selectedRoomId = null,
   onMarkerClick,
+  buildingName,
 }: SceneViewerProps) {
   const showMarkerTool =
     process.env.NODE_ENV === "development" &&
@@ -270,6 +376,22 @@ export default function SceneViewer({
                 <Model url={resolvedUrl} onDebugClick={handleDebugClick} />
               )}
 
+              {/* Building Name Badge */}
+              {buildingName && !isPreparing && (
+                <Html position={[0, 3.5, -0.5]} center zIndexRange={[100, 0]}>
+                  <div className="flex flex-col items-center justify-center pointer-events-none">
+                    <div className="px-5 py-2.5 bg-slate-950/80 backdrop-blur-md border border-cyan-500/50 rounded-xl relative">
+                      <div className="absolute inset-0 rounded-xl overflow-hidden">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-70" />
+                      </div>
+                      <h3 className="text-white font-semmibold text-xs whitespace-nowrap relative z-10">
+                        {buildingName}
+                      </h3>
+                    </div>
+                  </div>
+                </Html>
+              )}
+
               {/* Preview Marker (Hanya muncul jika debugMode aktif) */}
               {debugMode && previewPos && (
                 <Html position={previewPos} center>
@@ -282,78 +404,14 @@ export default function SceneViewer({
                 </Html>
               )}
 
-              {markers.map((marker) => {
-                const isActive = activeMarkerId === marker.id;
-
-                // Dynamically pick icon
-                const isDosen =
-                  marker.type === "dosen" ||
-                  marker.label.toLowerCase().includes("dosen");
-                const IconComponent = isDosen ? GraduationCap : Monitor;
-
-                return (
-                  <Html
-                    key={marker.id}
-                    position={marker.position}
-                    distanceFactor={10}
-                    center
-                    zIndexRange={[10, 0]}
-                  >
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isActive) {
-                          onMarkerClick?.({
-                            id: "",
-                            label: "",
-                            position: [0, 0, 0],
-                          });
-                        } else {
-                          onMarkerClick?.(marker);
-                        }
-                      }}
-                      className="relative group/marker cursor-pointer flex items-center justify-center w-8 h-8"
-                    >
-                      {/* Efek Ping */}
-                      <div
-                        className={cn(
-                          "absolute inset-0 rounded-full animate-ping opacity-20 bg-cyan-400",
-                          isActive ? "scale-125" : "scale-100",
-                        )}
-                      />
-
-                      {/* Holographic Circular Icon Badge */}
-                      <div
-                        className={cn(
-                          "relative w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300 shadow-md backdrop-blur-md",
-                          isActive
-                            ? "bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.8)] scale-110"
-                            : "bg-slate-950/85 border-cyan-500/30 text-cyan-400 hover:border-cyan-400 hover:text-white hover:shadow-[0_0_8px_rgba(6,182,212,0.3)]",
-                        )}
-                      >
-                        <IconComponent className="h-3.5 w-3.5 transition-transform duration-300" />
-                      </div>
-
-                      {/* Label Tooltip (Selalu muncul jika aktif, atau muncul saat hover jika tidak aktif) */}
-                      <div
-                        className={cn(
-                          "absolute left-9 top-1/2 -translate-y-1/2 transition-all duration-300 bg-slate-950/95 backdrop-blur-md text-[9px] py-1.5 px-2.5 rounded-md border whitespace-nowrap pointer-events-none shadow-[0_4px_12px_rgba(0,0,0,0.5)]",
-                          isActive
-                            ? "opacity-100 translate-x-0 text-white border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.25)] font-bold"
-                            : "opacity-0 translate-x-2 group-hover/marker:opacity-100 group-hover/marker:translate-x-0 text-cyan-400 border-cyan-500/30",
-                        )}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          {isActive && (
-                            <span className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse" />
-                          )}
-                          <span>{marker.label}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Html>
-                );
-              })}
+              {markers.map((marker) => (
+                <MarkerBadge
+                  key={marker.id}
+                  marker={marker}
+                  isActive={activeMarkerId === marker.id}
+                  onMarkerClick={onMarkerClick}
+                />
+              ))}
             </Stage>
           </Suspense>
         </QueryClientProvider>

@@ -34,7 +34,7 @@ export default function Home() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [activeModel, setActiveModel] = useState<string>("/models/polines.glb");
+  const [activeModel, setActiveModel] = useState<string>("/models/polines-test.glb");
   const [activeFilter, setActiveFilter] = useState<RoomFilterId>("ALL");
   const { setActiveContext, setIsHidden, isOpen: isChatbotOpen } = useChatbot();
 
@@ -148,6 +148,7 @@ export default function Home() {
           markers={INITIAL_MARKERS}
           selectedRoomId={selectedRoomId}
           onMarkerClick={(marker) => setSelectedRoomId(marker.id)}
+          buildingName={activeBuilding?.name}
         />
       </div>
 
