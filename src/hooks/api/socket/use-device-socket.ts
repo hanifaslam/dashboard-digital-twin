@@ -73,8 +73,13 @@ export const useDeviceSocket = (roomId?: string) => {
 
     const handleSensorData = (payload: {
       room_id: string;
+      device_id: string;
       power?: number | string | null;
       voltage?: number | string | null;
+      current?: number | string | null;
+      energy?: number | string | null;
+      frequency?: number | string | null;
+      power_factor?: number | string | null;
     }) => {
       queryClient.setQueriesData<BaseResponse<ListDeviceResponse>>(
         { queryKey: ["devices"], exact: false },
@@ -84,10 +89,15 @@ export const useDeviceSocket = (roomId?: string) => {
           return {
             ...oldData,
             data: oldData.data.map((device) => {
-              if (device.room_id === payload.room_id) {
+              if (device.id === payload.device_id) {
                 return {
                   ...device,
                   power: (payload.power as string | number) ?? device.power,
+                  voltage: (payload.voltage as string | number) ?? device.voltage,
+                  current: (payload.current as string | number) ?? device.current,
+                  energy: (payload.energy as string | number) ?? device.energy,
+                  frequency: (payload.frequency as string | number) ?? device.frequency,
+                  power_factor: (payload.power_factor as string | number) ?? device.power_factor,
                 };
               }
               return device;

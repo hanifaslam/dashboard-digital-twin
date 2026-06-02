@@ -8,6 +8,7 @@ export interface DeviceListParams extends BaseParams {
   room_id?: string;
   building_id?: string;
   type?: string;
+  exclude_type?: string;
 }
 
 export const DeviceService = {

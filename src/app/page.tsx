@@ -22,6 +22,7 @@ import {
   useLiveActivityLogQuery,
 } from "@/hooks/api/use-dashboard";
 import { useDashboardRealtime } from "@/hooks/api/socket/use-dashboard-realtime";
+import { useLiveEnergyChart } from "@/hooks/api/socket/use-live-energy-chart";
 import SceneViewer from "@/components/three/scene-viewer";
 import { cn } from "@/lib/utils";
 import { useChatbot } from "@/hooks/use-chatbot";
@@ -97,13 +98,23 @@ export default function Home() {
     });
   }, [activeFilter, searchQuery]);
 
+  const roomIds = useMemo(() => INITIAL_MARKERS.map((m) => m.id), []);
+  const liveEnergyPoints = useLiveEnergyChart(roomIds);
+
   const chartPoints = useMemo(
     () =>
       buildSparklinePoints(
-        energySummary?.trend.map((item) => item.total_power) ?? [],
+        liveEnergyPoints.map((item) => item.total_power)
       ),
-    [energySummary?.trend],
+    [liveEnergyPoints],
   );
+
+  const liveTrendWindowSeconds = useMemo(() => {
+    if (liveEnergyPoints.length < 2) return null;
+    const first = new Date(liveEnergyPoints[0].timestamp).getTime();
+    const last = new Date(liveEnergyPoints[liveEnergyPoints.length - 1].timestamp).getTime();
+    return Math.round((last - first) / 1000);
+  }, [liveEnergyPoints]);
   const activeBuilding = useMemo(
     () =>
       buildings.find((building) => building.id === activeBuildingId) ?? null,
@@ -131,8 +142,12 @@ export default function Home() {
     setSelectedRoomId(null);
   };
 
-  const lastUpdatedLabel = energySummary?.last_updated_at
-    ? new Date(energySummary.last_updated_at).toLocaleTimeString("en-US", {
+  const latestTimestamp = liveEnergyPoints.length > 0 
+    ? liveEnergyPoints[liveEnergyPoints.length - 1].timestamp 
+    : energySummary?.last_updated_at;
+
+  const lastUpdatedLabel = latestTimestamp
+    ? new Date(latestTimestamp).toLocaleTimeString("en-US", {
         hour12: false,
         hour: "2-digit",
         minute: "2-digit",
@@ -217,7 +232,7 @@ export default function Home() {
                 currentPowerWatts={energySummary?.current_active_demand_watts}
                 changePercent={energySummary?.change_percent_vs_average}
                 chartPoints={chartPoints}
-                trendWindowSeconds={energySummary?.trend_window_seconds}
+                trendWindowSeconds={liveTrendWindowSeconds ?? energySummary?.trend_window_seconds}
                 lastUpdatedAt={lastUpdatedLabel}
                 isLoading={
                   isEnergySummaryLoading ||

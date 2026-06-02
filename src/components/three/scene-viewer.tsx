@@ -6,8 +6,10 @@ import { Canvas, ThreeEvent, useFrame } from "@react-three/fiber";
 import { useQueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { OrbitControls, Stage, useGLTF, Html } from "@react-three/drei";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { GraduationCap, Monitor, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LecturerRoomIcon } from "@/components/icons/lecturer-room-icon";
+import { ClassRoomIcon } from "@/components/icons/class-room-icon";
 import { useCachedModelUrl } from "@/components/three/use-cached-model-url";
 import { useScheduleListQuery } from "@/hooks/api/digital-twin/use-schedule";
 
@@ -171,7 +173,7 @@ function MarkerBadge({
   // Dynamically pick icon
   const isDosen =
     marker.type === "dosen" || marker.label.toLowerCase().includes("dosen");
-  const IconComponent = isDosen ? GraduationCap : Monitor;
+  const IconComponent = isDosen ? LecturerRoomIcon : ClassRoomIcon;
 
   return (
     <Html

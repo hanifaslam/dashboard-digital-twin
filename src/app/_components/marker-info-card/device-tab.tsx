@@ -19,6 +19,7 @@ import {
 } from "@/hooks/api/digital-twin/use-device";
 import { useRoomEnvironmentQuery } from "@/hooks/api/digital-twin/use-room-environment";
 import { useDeviceSocket } from "@/hooks/api/socket/use-device-socket";
+import { useConfirm } from "@/components/providers/confirm-provider";
 import { cn, parseAxiosError } from "@/lib/utils";
 import type { ListDeviceResponse } from "@/types/response/digital-twin/device-response";
 import type { RoomEnvironmentResponse } from "@/types/response/digital-twin/room-environment-response";
@@ -32,18 +33,30 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
 
   const { data: devicesResp, isLoading } = useDeviceListQuery({
     room_id: roomId,
+    exclude_type: "SENSOR",
+    status: "true",
   });
   const { data: environment, isLoading: isLoadingEnvironment } =
     useRoomEnvironmentQuery(roomId, {
       sensor_type: "DHT22",
     });
   const controlMutation = useControlDeviceMutation();
+  const confirm = useConfirm();
 
   const devices = devicesResp?.data ?? [];
   const environmentMetrics = getEnvironmentMetrics(environment);
 
   const handleToggleControl = async (device: ListDeviceResponse) => {
     const isTurningOn = !device.is_on;
+
+    const confirmed = await confirm({
+      title: "Confirm Action",
+      description: `Are you sure you want to turn ${isTurningOn ? "on" : "off"} ${device.name}?`,
+      confirmText: "Yes",
+      cancelText: "Cancel",
+    });
+
+    if (!confirmed) return;
 
     try {
       await controlMutation.mutateAsync({
@@ -205,7 +218,7 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
 }
 
 function getPowerPercentage(power: number | string | null | undefined) {
-  return Math.min((Number(power) || 0) / 10, 100);
+  return Math.min((Number(power) || 0) / 2, 100);
 }
 
 function getEnvironmentMetrics(environment?: RoomEnvironmentResponse) {

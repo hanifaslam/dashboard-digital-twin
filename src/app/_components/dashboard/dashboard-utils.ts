@@ -7,8 +7,12 @@ export function buildSparklinePoints(history: number[]) {
 
   const width = 300;
   const height = 80;
-  const maxVal = Math.max(...history, 280);
-  const minVal = Math.min(...history, 120);
+  const dataMax = Math.max(...history);
+  const dataMin = Math.min(...history);
+  
+  // Beri jarak dinamis agar grafik tidak mentok atas (tambah 20% margin)
+  const maxVal = dataMax === 0 ? 100 : dataMax * 1.2;
+  const minVal = Math.min(0, dataMin);
   const range = Math.max(maxVal - minVal, 1);
 
   return history

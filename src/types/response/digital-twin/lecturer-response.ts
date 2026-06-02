@@ -7,4 +7,5 @@ export interface LecturerResponse {
   course: string | null
   present_since: string | null
   phone_number?: string | null
+  profile_picture?: string | null
 }

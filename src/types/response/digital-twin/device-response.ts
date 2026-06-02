@@ -15,4 +15,16 @@ export interface ListDeviceResponse {
   created_at: string;
   updated_at: string;
   is_online: boolean;
+  latest_telemetry?: {
+    sensor_type: string;
+    voltage: number | null;
+    current: number | null;
+    power: number | null;
+    energy: number | null;
+    frequency: number | null;
+    power_factor: number | null;
+    temperature: number | null;
+    humidity: number | null;
+    created_at: string;
+  } | null;
 }

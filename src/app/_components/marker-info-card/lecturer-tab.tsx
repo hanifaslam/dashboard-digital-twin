@@ -4,7 +4,7 @@ import { useState } from "react";
 import { User, BookOpen, Clock, Phone, IdCard, ChevronDown } from "lucide-react";
 import { useLecturerListQuery } from "@/hooks/api/digital-twin/use-lecturer";
 import { LecturerResponse } from "@/types/response/digital-twin/lecturer-response";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import SearchInput from "@/components/common/input/search-input";
 import { StatusBadge } from "./status-badge";
@@ -74,6 +74,7 @@ function LecturerCard({ lecturer, index }: { lecturer: LecturerResponse; index: 
       
       <div className="flex items-start gap-4">
         <Avatar className="h-12 w-12 border-2 border-white/10 shadow-lg group-hover:border-cyan-500/40 transition-colors">
+          <AvatarImage src={lecturer.profile_picture || undefined} alt={lecturer.name} className="object-cover" />
           <AvatarFallback className="bg-cyan-500/15 text-cyan-400 font-bold shadow-[inset_0_0_8px_rgba(6,182,212,0.1)]">
             {lecturer.name
               .split(" ")

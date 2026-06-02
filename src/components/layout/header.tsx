@@ -11,7 +11,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   ChevronDown,
   Cpu,
@@ -19,7 +19,6 @@ import {
   Menu,
   RefreshCw,
   User,
-  UserIcon,
   Wifi,
 } from "lucide-react";
 import Image from "next/image";
@@ -36,7 +35,6 @@ import { dashboardQueryKeys } from "@/hooks/api/use-dashboard";
 import type { DeviceLiveSummary } from "@/types/dashboard";
 
 export function Header() {
-  const router = useRouter();
   const pathname = usePathname();
   const authModal = useAuthModal();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -180,7 +178,14 @@ export function Header() {
                   variant="ghost"
                   className="flex items-center gap-2.5 pl-2.5 pr-4 h-10 hover:bg-cyan-500/10 bg-slate-950/60 backdrop-blur-md rounded-lg text-cyan-400 transition-all duration-300"
                 >
-                  <Avatar className={cn("h-8 w-8", !user.profile_picture ? "border border-cyan-500/30" : "border-none after:hidden")}>
+                  <Avatar
+                    className={cn(
+                      "h-8 w-8",
+                      !user.profile_picture
+                        ? "border border-cyan-500/30"
+                        : "border-none after:hidden",
+                    )}
+                  >
                     <AvatarImage
                       src={user.profile_picture || undefined}
                       alt={user.name}
@@ -199,13 +204,13 @@ export function Header() {
                 align="end"
                 className="w-48 bg-slate-950/90 backdrop-blur-md border border-cyan-500/20 text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
               >
-                <DropdownMenuItem
+                {/* <DropdownMenuItem
                   className="text-xs hover:bg-cyan-500/10 focus:bg-cyan-500/10 focus:text-cyan-400 cursor-pointer font-medium"
                   onClick={() => router.push("/profile/profile")}
                 >
                   <UserIcon className="h-4 w-4 mr-2 text-cyan-400" />
                   Profile
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400 cursor-pointer text-xs font-medium"

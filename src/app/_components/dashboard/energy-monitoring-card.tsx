@@ -142,12 +142,14 @@ export function EnergyMonitoringCard({
                     No live energy data
                   </div>
                 )}
-                <div className="absolute bottom-1 left-2 text-[8px] font-medium text-cyan-500/35">
-                  {lastUpdatedAt ? `Updated ${lastUpdatedAt}` : "Waiting for update"}
                 </div>
-                <div className="absolute bottom-1 right-2 text-[8px] font-medium text-cyan-500/35">
-                  Time Window: {trendWindowSeconds ?? 0}s
-                </div>
+                <div className="mt-1 flex items-center justify-between px-1">
+                  <div className="text-[8px] font-medium text-cyan-500/35">
+                    {lastUpdatedAt ? `Updated ${lastUpdatedAt}` : "Waiting for update"}
+                  </div>
+                  <div className="text-[8px] font-medium text-cyan-500/35">
+                    Last: {trendWindowSeconds ?? 0}s
+                  </div>
                 </div>
               </motion.div>
             )}
