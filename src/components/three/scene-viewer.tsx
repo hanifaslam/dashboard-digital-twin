@@ -16,7 +16,7 @@ export interface Marker {
   position: [number, number, number];
   label: string;
   description?: string;
-  type?: "dosen" | "lab";
+  type?: "dosen" | "class";
 }
 
 interface ModelProps {

@@ -126,7 +126,22 @@ function LecturerCard({ lecturer, index }: { lecturer: LecturerResponse; index: 
               </div>
               <div className="flex items-center gap-2 text-xs text-white/70">
                 <Phone className="w-3.5 h-3.5 text-cyan-400/70" />
-                <span><span className="text-white/40">Phone:</span> {lecturer.phone_number || "-"}</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-white/40">Phone:</span>
+                  {lecturer.phone_number ? (
+                    <a
+                      href={`https://wa.me/${lecturer.phone_number.replace(/\D/g, "").replace(/^0/, "62")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-cyan-400 hover:underline transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {lecturer.phone_number}
+                    </a>
+                  ) : (
+                    <span>-</span>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>

@@ -34,7 +34,9 @@ export default function Home() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [activeModel, setActiveModel] = useState<string>("/models/polines-test.glb");
+  const [activeModel, setActiveModel] = useState<string>(
+    "/models/polines-test.glb",
+  );
   const [activeFilter, setActiveFilter] = useState<RoomFilterId>("ALL");
   const { setActiveContext, setIsHidden, isOpen: isChatbotOpen } = useChatbot();
 
@@ -83,10 +85,11 @@ export default function Home() {
         return marker.label.toLowerCase().includes("dosen");
       }
 
-      if (activeFilter === "LAB") {
+      if (activeFilter === "CLASS") {
         return (
           marker.label.toLowerCase().includes("room") ||
-          marker.label.toLowerCase().includes("lab")
+          marker.label.toLowerCase().includes("lab") ||
+          marker.label.toLowerCase().includes("sb")
         );
       }
 
