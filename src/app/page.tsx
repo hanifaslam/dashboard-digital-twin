@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MarkerInfoCard } from "@/app/_components/marker-info-card";
 import { ActivityLogBar } from "@/app/_components/dashboard/activity-log-bar";
 import { BuildingSelector } from "@/app/_components/dashboard/building-selector";
+import { ModelSelector } from "@/app/_components/dashboard/model-selector";
 import {
   INITIAL_MARKERS,
   type RoomFilterId,
@@ -33,12 +34,9 @@ export default function Home() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [activeModel, setActiveModel] = useState<string>("/models/polines.glb");
   const [activeFilter, setActiveFilter] = useState<RoomFilterId>("ALL");
-  const {
-    setActiveContext,
-    setIsHidden,
-    isOpen: isChatbotOpen,
-  } = useChatbot();
+  const { setActiveContext, setIsHidden, isOpen: isChatbotOpen } = useChatbot();
 
   useEffect(() => {
     setIsHidden(false);
@@ -55,9 +53,7 @@ export default function Home() {
     }
 
     if (
-      buildings.some(
-        (building) => building.id === DEFAULT_SCENE_BUILDING_ID,
-      )
+      buildings.some((building) => building.id === DEFAULT_SCENE_BUILDING_ID)
     ) {
       return DEFAULT_SCENE_BUILDING_ID;
     }
@@ -106,7 +102,8 @@ export default function Home() {
     [energySummary?.trend],
   );
   const activeBuilding = useMemo(
-    () => buildings.find((building) => building.id === activeBuildingId) ?? null,
+    () =>
+      buildings.find((building) => building.id === activeBuildingId) ?? null,
     [activeBuildingId, buildings],
   );
 
@@ -147,18 +144,22 @@ export default function Home() {
 
       <div className="absolute inset-0 z-0 bg-slate-950">
         <SceneViewer
-          modelUrl="/models/polines-test.glb"
+          modelUrl={activeModel}
           markers={INITIAL_MARKERS}
           selectedRoomId={selectedRoomId}
           onMarkerClick={(marker) => setSelectedRoomId(marker.id)}
         />
       </div>
 
-      <div className="absolute left-1/2 top-4 z-20 hidden -translate-x-1/2 lg:block">
+      <div className="absolute left-1/2 top-4 z-20 hidden -translate-x-1/2 lg:flex lg:flex-row lg:gap-2">
         <BuildingSelector
           buildings={buildings}
           selectedBuilding={activeBuildingId}
           onSelect={handleBuildingChange}
+        />
+        <ModelSelector
+          activeModel={activeModel}
+          onModelChange={setActiveModel}
         />
       </div>
 
@@ -204,7 +205,9 @@ export default function Home() {
                 buildingLabel={
                   energySummary?.building_name ??
                   activeBuilding?.name ??
-                  (isBuildingsLoading ? "Loading building..." : "No building selected")
+                  (isBuildingsLoading
+                    ? "Loading building..."
+                    : "No building selected")
                 }
                 currentPowerLabel={energySummary?.current_active_demand_label}
                 currentPowerWatts={energySummary?.current_active_demand_watts}
