@@ -72,7 +72,8 @@ function CameraController({
       const [tx, ty, tz] = activeMarker.position;
 
       // Compute target camera position relative to room (zoom in close)
-      const targetCamX = tx + 3.0;
+      // Menyesuaikan posisi kamera dari depan atau belakang berdasarkan posisi X
+      const targetCamX = tx + (tx > 0 ? 3.0 : -3.0);
       const targetCamY = ty + 2.0;
       const targetCamZ = tz + 3.0;
 
@@ -161,10 +162,12 @@ function CameraController({
 function MarkerBadge({
   marker,
   isActive,
+  isHidden,
   onMarkerClick,
 }: {
   marker: Marker;
   isActive: boolean;
+  isHidden?: boolean;
   onMarkerClick?: (marker: Marker) => void;
 }) {
   const { data: schedules } = useScheduleListQuery(marker.id);
@@ -183,6 +186,8 @@ function MarkerBadge({
       zIndexRange={[10, 0]}
     >
       <div
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           if (isActive) {
@@ -195,7 +200,10 @@ function MarkerBadge({
             onMarkerClick?.(marker);
           }
         }}
-        className="relative group/marker cursor-pointer flex items-center justify-center w-8 h-8"
+        className={cn(
+          "relative group/marker cursor-pointer flex items-center justify-center w-8 h-8 transition-opacity duration-300",
+          isHidden ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
+        )}
       >
         {/* Efek Ping */}
         <div
@@ -406,14 +414,19 @@ export default function SceneViewer({
                 </Html>
               )}
 
-              {markers.map((marker) => (
-                <MarkerBadge
-                  key={marker.id}
-                  marker={marker}
-                  isActive={activeMarkerId === marker.id}
-                  onMarkerClick={onMarkerClick}
-                />
-              ))}
+              {markers.map((marker) => {
+                const isActive = activeMarkerId === marker.id;
+                const isHidden = !!activeMarkerId && !isActive;
+                return (
+                  <MarkerBadge
+                    key={marker.id}
+                    marker={marker}
+                    isActive={isActive}
+                    isHidden={isHidden}
+                    onMarkerClick={onMarkerClick}
+                  />
+                );
+              })}
             </Stage>
           </Suspense>
         </QueryClientProvider>

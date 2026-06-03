@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import type { RoomFilterId } from "./dashboard-config";
 import { ROOM_FILTERS } from "./dashboard-config";
 import { PanelShell } from "./panel-shell";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface RoomDirectoryPanelProps {
   markers: Marker[];
@@ -70,44 +71,46 @@ export function RoomDirectoryPanel({
         ))}
       </div>
 
-      <div className="flex max-h-[220px] flex-col gap-2 overflow-y-auto pr-1">
-        {markers.length ? (
-          markers.map((marker) => {
-            const isActive = selectedRoomId === marker.id;
+      <ScrollArea className="h-[220px]">
+        <div className="flex flex-col gap-2">
+          {markers.length ? (
+            markers.map((marker) => {
+              const isActive = selectedRoomId === marker.id;
 
-            return (
-              <button
-                key={marker.id}
-                onClick={() => onRoomSelect(marker.id)}
-                className={cn(
-                  "flex items-center justify-between rounded-lg border p-2.5 text-left transition-all duration-300",
-                  isActive
-                    ? "border-cyan-400 bg-cyan-500/15 text-white shadow-[0_0_12px_rgba(6,182,212,0.1)]"
-                    : "border-cyan-500/10 bg-slate-900/40 text-white/85 hover:border-cyan-500/30 hover:bg-slate-900/80",
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <Layers
-                    className={cn(
-                      "h-3.5 w-3.5",
-                      isActive
-                        ? "animate-pulse text-cyan-400"
-                        : "text-cyan-500/60",
-                    )}
-                  />
-                  <span className="text-[11px] font-semibold">
-                    {marker.label}
-                  </span>
-                </div>
-              </button>
-            );
-          })
-        ) : (
-          <div className="py-8 text-center text-[10px] text-cyan-500/30">
-            No assets detected
-          </div>
-        )}
-      </div>
+              return (
+                <button
+                  key={marker.id}
+                  onClick={() => onRoomSelect(marker.id)}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg border p-2.5 text-left transition-all duration-300",
+                    isActive
+                      ? "border-cyan-400 bg-cyan-500/15 text-white shadow-[0_0_12px_rgba(6,182,212,0.1)]"
+                      : "border-cyan-500/10 bg-slate-900/40 text-white/85 hover:border-cyan-500/30 hover:bg-slate-900/80",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <Layers
+                      className={cn(
+                        "h-3.5 w-3.5",
+                        isActive
+                          ? "animate-pulse text-cyan-400"
+                          : "text-cyan-500/60",
+                      )}
+                    />
+                    <span className="text-[11px] font-semibold">
+                      {marker.label}
+                    </span>
+                  </div>
+                </button>
+              );
+            })
+          ) : (
+            <div className="py-8 text-center text-[10px] text-cyan-500/30">
+              No assets detected
+            </div>
+          )}
+        </div>
+      </ScrollArea>
     </PanelShell>
   );
 }
