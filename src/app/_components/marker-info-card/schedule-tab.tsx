@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, MonitorSmartphone } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { useScheduleListQuery } from "@/hooks/api/digital-twin/use-schedule";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
@@ -48,7 +48,11 @@ export function ScheduleTab({ roomId }: ScheduleTabProps) {
                     "w-full rounded-xl p-3 flex items-start gap-4 transition-transform duration-300 hover:-translate-y-0.5",
                     schedule.is_active
                       ? "border border-emerald-500/50 bg-emerald-950/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                      : "border border-cyan-500/10 bg-slate-900",
+                      : schedule.is_passed
+                        ? "border border-slate-700/30 bg-slate-900/40 opacity-50 grayscale"
+                        : schedule.is_upcoming
+                          ? "border border-amber-500/30 bg-amber-950/20"
+                          : "border border-cyan-500/10 bg-slate-900",
                   )}
                 >
                   {/* Time Badge */}
@@ -57,7 +61,11 @@ export function ScheduleTab({ roomId }: ScheduleTabProps) {
                       "flex flex-col items-center justify-center min-w-[100px] h-[52px] rounded-lg border shrink-0 relative overflow-hidden",
                       schedule.is_active
                         ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                        : "bg-cyan-500/10 border-cyan-500/20 text-cyan-400",
+                        : schedule.is_passed
+                          ? "bg-slate-500/10 border-slate-500/20 text-slate-400"
+                          : schedule.is_upcoming
+                            ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                            : "bg-cyan-500/10 border-cyan-500/20 text-cyan-400",
                     )}
                   >
                     <div
@@ -65,7 +73,11 @@ export function ScheduleTab({ roomId }: ScheduleTabProps) {
                         "absolute inset-0 blur-md",
                         schedule.is_active
                           ? "bg-emerald-500/10"
-                          : "bg-cyan-500/5",
+                          : schedule.is_passed
+                            ? "bg-slate-500/5"
+                            : schedule.is_upcoming
+                              ? "bg-amber-500/10"
+                              : "bg-cyan-500/5",
                       )}
                     />
                     <span className="text-xs z-10 text-white font-medium">
@@ -85,7 +97,18 @@ export function ScheduleTab({ roomId }: ScheduleTabProps) {
                         </span>
                       )}
                     </div>
-                    <span className="text-xs font-medium text-cyan-300/90 truncate">
+                    <span
+                      className={cn(
+                        "text-xs font-medium truncate",
+                        schedule.is_active
+                          ? "text-emerald-300/90"
+                          : schedule.is_passed
+                            ? "text-slate-400/90"
+                            : schedule.is_upcoming
+                              ? "text-amber-300/90"
+                              : "text-cyan-300/90",
+                      )}
+                    >
                       Class {schedule.class_name}
                     </span>
                     <span className="mt-1 flex items-center gap-1.5 text-xs text-white/60">

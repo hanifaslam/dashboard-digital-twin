@@ -9,4 +9,6 @@ export interface ScheduleResponse {
   is_online: boolean
   lecturer_name: string
   is_active?: boolean
+  is_passed?: boolean
+  is_upcoming?: boolean
 }

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const MODELS = [
-  { id: "/models/polines.glb", name: "Polines Main" },
+  { id: "/models/polines-main.glb", name: "Polines Main" },
   { id: "/models/polines-test.glb", name: "Polines Test" },
 ];
 
@@ -40,7 +40,10 @@ export function ModelSelector({
         align="center"
         className="w-48 border border-cyan-500/20 bg-slate-950/95 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl z-50"
       >
-        <DropdownMenuRadioGroup value={activeModel} onValueChange={onModelChange}>
+        <DropdownMenuRadioGroup
+          value={activeModel}
+          onValueChange={onModelChange}
+        >
           {MODELS.map((model) => (
             <DropdownMenuRadioItem
               key={model.id}
