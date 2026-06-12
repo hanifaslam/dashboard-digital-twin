@@ -33,6 +33,7 @@ import { socket } from "@/lib/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { dashboardQueryKeys } from "@/hooks/api/use-dashboard";
 import type { DeviceLiveSummary } from "@/types/dashboard";
+import { SystemClock } from "./system-clock";
 
 export function Header() {
   const pathname = usePathname();
@@ -109,7 +110,7 @@ export function Header() {
           />
         </div>
 
-        <div className="hidden lg:flex items-center">
+        <div className="hidden lg:flex items-center gap-4">
           <Link
             href="/"
             className="relative h-14 w-14 hover:opacity-80 transition-opacity"
@@ -125,6 +126,10 @@ export function Header() {
               draggable={false}
             />
           </Link>
+
+          <div className="h-8 w-px bg-cyan-500/20 hidden xl:block" />
+
+          <SystemClock variant="compact" className="hidden lg:flex" />
         </div>
 
         <div className="hidden lg:flex items-center gap-4">

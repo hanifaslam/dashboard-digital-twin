@@ -34,8 +34,13 @@ export function MapboxSync({
     const camPos = state.camera.position;
 
     // 1. Center (Dikalikan skala agar pan/geser map terasa)
-    const lng = baseLng + target.x * MODEL_SCALE_METERS * metersToLng;
-    const lat = baseLat - target.z * MODEL_SCALE_METERS * metersToLat;
+    // Rotasi vektor target berdasarkan BEARING_OFFSET agar arah geser 3D sinkron dengan rotasi peta
+    const theta = (BEARING_OFFSET * Math.PI) / 180;
+    const rotatedX = target.x * Math.cos(theta) - target.z * Math.sin(theta);
+    const rotatedZ = target.x * Math.sin(theta) + target.z * Math.cos(theta);
+
+    const lng = baseLng + rotatedX * MODEL_SCALE_METERS * metersToLng;
+    const lat = baseLat - rotatedZ * MODEL_SCALE_METERS * metersToLat;
 
     // 2. Zoom
     const distance = camPos.distanceTo(target);

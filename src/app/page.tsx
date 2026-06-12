@@ -15,7 +15,6 @@ import { EnergyMonitoringCard } from "@/app/_components/dashboard/energy-monitor
 import { RoomDirectoryPanel } from "@/app/_components/dashboard/room-directory-panel";
 import { buildSparklinePoints } from "@/app/_components/dashboard/dashboard-utils";
 import { WeatherSummaryCard } from "@/app/_components/weather-summary-card";
-import { SystemClock } from "@/components/layout/system-clock";
 import {
   useDashboardBuildingsQuery,
   useEnergyMonitoringSummaryQuery,
@@ -103,16 +102,16 @@ export default function Home() {
 
   const chartPoints = useMemo(
     () =>
-      buildSparklinePoints(
-        liveEnergyPoints.map((item) => item.total_power)
-      ),
+      buildSparklinePoints(liveEnergyPoints.map((item) => item.total_power)),
     [liveEnergyPoints],
   );
 
   const liveTrendWindowSeconds = useMemo(() => {
     if (liveEnergyPoints.length < 2) return null;
     const first = new Date(liveEnergyPoints[0].timestamp).getTime();
-    const last = new Date(liveEnergyPoints[liveEnergyPoints.length - 1].timestamp).getTime();
+    const last = new Date(
+      liveEnergyPoints[liveEnergyPoints.length - 1].timestamp,
+    ).getTime();
     return Math.round((last - first) / 1000);
   }, [liveEnergyPoints]);
   const activeBuilding = useMemo(
@@ -142,9 +141,10 @@ export default function Home() {
     setSelectedRoomId(null);
   };
 
-  const latestTimestamp = liveEnergyPoints.length > 0 
-    ? liveEnergyPoints[liveEnergyPoints.length - 1].timestamp 
-    : energySummary?.last_updated_at;
+  const latestTimestamp =
+    liveEnergyPoints.length > 0
+      ? liveEnergyPoints[liveEnergyPoints.length - 1].timestamp
+      : energySummary?.last_updated_at;
 
   const lastUpdatedLabel = latestTimestamp
     ? new Date(latestTimestamp).toLocaleTimeString("en-US", {
@@ -176,20 +176,17 @@ export default function Home() {
           selectedBuilding={activeBuildingId}
           onSelect={handleBuildingChange}
         />
-        <ModelSelector
-          activeModel={activeModel}
-          onModelChange={setActiveModel}
-        />
+        {process.env.NEXT_PUBLIC_ENABLE_MARKER_TOOL === "true" && (
+          <ModelSelector
+            activeModel={activeModel}
+            onModelChange={setActiveModel}
+          />
+        )}
       </div>
 
       <div className="pointer-events-auto absolute left-4 top-4 z-20 flex max-h-[85%] flex-col gap-4 overflow-hidden">
-        <div className="hidden lg:grid lg:grid-cols-[20rem_max-content] lg:gap-4">
-          <div className="w-80">
-            <WeatherSummaryCard />
-          </div>
-          <div>
-            <SystemClock className="w-fit" />
-          </div>
+        <div className="hidden lg:block w-80">
+          <WeatherSummaryCard />
         </div>
 
         <RoomDirectoryPanel
@@ -232,7 +229,9 @@ export default function Home() {
                 currentPowerWatts={energySummary?.current_active_demand_watts}
                 changePercent={energySummary?.change_percent_vs_average}
                 chartPoints={chartPoints}
-                trendWindowSeconds={liveTrendWindowSeconds ?? energySummary?.trend_window_seconds}
+                trendWindowSeconds={
+                  liveTrendWindowSeconds ?? energySummary?.trend_window_seconds
+                }
                 lastUpdatedAt={lastUpdatedLabel}
                 isLoading={
                   isEnergySummaryLoading ||

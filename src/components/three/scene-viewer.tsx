@@ -489,7 +489,8 @@ export default function SceneViewer({
         <OrbitControls
           ref={controlsRef}
           makeDefault
-          enablePan={false} // Dimatikan agar sinkronisasi dengan Mapbox tidak rusak
+          enablePan={true} // Diaktifkan agar pengguna bisa menggeser peta
+          screenSpacePanning={false} // Panning vertikal akan menggeser ke depan/belakang (sumbu Z), bukan ke atas/bawah (sumbu Y)
           minPolarAngle={0}
           maxPolarAngle={85 * (Math.PI / 180)} // Dibatasi maksimal 85 derajat agar sama persis dengan batas pitch maksimal Mapbox
           onStart={() => {
@@ -512,7 +513,6 @@ export default function SceneViewer({
           className="flex h-11 items-center justify-center gap-2 rounded-lg border border-cyan-500/20 bg-slate-950/60 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur-md transition-all active:scale-95 shadow-[0_4px_15px_rgba(0,0,0,0.3)] hover:border-cyan-500/40 hover:bg-white/5"
         >
           <RotateCcw className="h-3.5 w-3.5 text-cyan-400" />
-          Reset View
         </button>
 
         {showMarkerTool && (
