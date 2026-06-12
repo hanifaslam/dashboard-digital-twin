@@ -23,7 +23,7 @@ import {
 } from "@/hooks/api/use-dashboard";
 import { useDashboardRealtime } from "@/hooks/api/socket/use-dashboard-realtime";
 import { useLiveEnergyChart } from "@/hooks/api/socket/use-live-energy-chart";
-import SceneViewer from "@/components/three/scene-viewer";
+import MapboxScene from "@/components/three/mapbox-scene";
 import { cn } from "@/lib/utils";
 import { useChatbot } from "@/hooks/use-chatbot";
 
@@ -36,7 +36,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [activeModel, setActiveModel] = useState<string>(
-    "/models/polines-test.glb",
+    "/models/polines-main.glb",
   );
   const [activeFilter, setActiveFilter] = useState<RoomFilterId>("ALL");
   const { setActiveContext, setIsHidden, isOpen: isChatbotOpen } = useChatbot();
@@ -161,7 +161,7 @@ export default function Home() {
       <div className="tech-scanline pointer-events-none absolute inset-0 z-10 opacity-10" />
 
       <div className="absolute inset-0 z-0 bg-slate-950">
-        <SceneViewer
+        <MapboxScene
           modelUrl={activeModel}
           markers={INITIAL_MARKERS}
           selectedRoomId={selectedRoomId}

@@ -1,0 +1,121 @@
+"use client";
+
+import "mapbox-gl/dist/mapbox-gl.css";
+import Map, { MapProvider, useMap } from "react-map-gl/mapbox";
+import SceneViewer from "./scene-viewer";
+import { useEffect } from "react";
+import type { Map as MapboxMap } from "mapbox-gl";
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+export let globalMapboxInstance: MapboxMap | null = null;
+
+function Mapbox3DBuildings() {
+  const { current: map } = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+    const mbMap = map.getMap() as MapboxMap;
+    globalMapboxInstance = mbMap;
+
+    mbMap.on("style.load", () => {
+      if (mbMap.getLayer("3d-buildings")) {
+        return; // Mencegah error duplikat layer saat React hot-reload
+      }
+
+      // Insert the layer beneath any symbol layer.
+      const layers = mbMap.getStyle()?.layers;
+      let labelLayerId;
+      if (layers) {
+        for (let i = 0; i < layers.length; i++) {
+          if (
+            layers[i].type === "symbol" &&
+            (layers[i] as { layout?: { "text-field"?: unknown } }).layout?.[
+              "text-field"
+            ]
+          ) {
+            labelLayerId = layers[i].id;
+            break;
+          }
+        }
+      }
+
+      /* 
+      Fitur gedung 3D bawaan Mapbox dimatikan sementara agar tidak bertabrakan dengan gedung Digital Twin 
+      mbMap.addLayer(
+        {
+          id: "3d-buildings",
+          source: "composite",
+          "source-layer": "building",
+          filter: ["==", "extrude", "true"],
+          type: "fill-extrusion",
+          minzoom: 15,
+          paint: {
+            "fill-extrusion-color": "#aaa",
+            "fill-extrusion-height": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              15,
+              0,
+              15.05,
+              ["get", "height"],
+            ],
+            "fill-extrusion-base": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              15,
+              0,
+              15.05,
+              ["get", "min_height"],
+            ],
+            "fill-extrusion-opacity": 0.6,
+          },
+        },
+        labelLayerId,
+      );
+      */
+    });
+  }, [map]);
+
+  return null;
+}
+
+export default function MapboxScene(
+  props: React.ComponentProps<typeof SceneViewer>,
+) {
+  return (
+    <MapProvider>
+      <div className="relative w-full h-full bg-slate-900">
+        <Map
+          id="main-map"
+          mapboxAccessToken={MAPBOX_TOKEN}
+          initialViewState={{
+            longitude: 110.43436293386422,
+            latitude: -7.052528631105904,
+            zoom: 17,
+            pitch: 45,
+            bearing: 0,
+          }}
+          mapStyle="mapbox://styles/mapbox/streets-v12"
+          interactive={false}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <Mapbox3DBuildings />
+        </Map>
+
+        {/* Overlay ThreeJS on top */}
+        <div className="absolute inset-0 pointer-events-auto z-10">
+          <SceneViewer {...props} />
+        </div>
+      </div>
+    </MapProvider>
+  );
+}

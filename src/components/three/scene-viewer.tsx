@@ -2,9 +2,15 @@
 
 import { Suspense, useRef, useState, useEffect } from "react";
 import * as THREE from "three";
-import { Canvas, ThreeEvent, useFrame } from "@react-three/fiber";
+import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useQueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { OrbitControls, Stage, useGLTF, Html } from "@react-three/drei";
+import {
+  OrbitControls,
+  useGLTF,
+  Html,
+  Environment,
+  ContactShadows,
+} from "@react-three/drei";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,6 +18,7 @@ import { LecturerRoomIcon } from "@/components/icons/lecturer-room-icon";
 import { ClassRoomIcon } from "@/components/icons/class-room-icon";
 import { useCachedModelUrl } from "@/components/three/use-cached-model-url";
 import { useScheduleListQuery } from "@/hooks/api/digital-twin/use-schedule";
+import { MapboxSync } from "./mapbox-sync";
 
 export interface Marker {
   id: string;
@@ -33,6 +40,7 @@ function Model({
   return (
     <primitive
       object={scene}
+      scale={[1, 1, 1]} // Skala dikembalikan ke 1 karena sekarang skalanya diatur di pembungkus (Center) agar marker ikut menyesuaikan
       onClick={(e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
         const { x, y, z } = e.point;
@@ -51,6 +59,7 @@ function CameraController({
   setIsTransitioning,
   shouldReset,
   onResetComplete,
+  debugMode,
 }: {
   selectedRoomId: string | null;
   markers: Marker[];
@@ -58,9 +67,26 @@ function CameraController({
   setIsTransitioning: (val: boolean) => void;
   shouldReset: boolean;
   onResetComplete: () => void;
+  debugMode?: boolean;
 }) {
-  const defaultCam = useRef(new THREE.Vector3(10, 0, 0));
+  const defaultCam = useRef(new THREE.Vector3(1.59, 0.53, 1.57));
   const defaultTarget = useRef(new THREE.Vector3(0, 0, 0));
+
+  const { camera } = useThree();
+
+  useEffect(() => {
+    if (!debugMode) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "c" || e.key === "C") {
+        console.log(
+          `Posisi Kamera Saat Ini: [${camera.position.x.toFixed(2)}, ${camera.position.y.toFixed(2)}, ${camera.position.z.toFixed(2)}]`,
+        );
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [camera, debugMode]);
 
   useFrame((state) => {
     const controls = state.controls as unknown as OrbitControlsImpl;
@@ -69,13 +95,27 @@ function CameraController({
     const activeMarker = markers.find((m) => m.id === selectedRoomId);
 
     if (activeMarker && isTransitioning) {
-      const [tx, ty, tz] = activeMarker.position;
+      const [rawX, rawY, rawZ] = activeMarker.position;
 
-      // Compute target camera position relative to room (zoom in close)
-      // Menyesuaikan posisi kamera dari depan atau belakang berdasarkan posisi X
-      const targetCamX = tx + (tx > 0 ? 3.0 : -3.0);
-      const targetCamY = ty + 2.0;
-      const targetCamZ = tz + 3.0;
+      // Konversi posisi marker ke skala dunia baru (0.09) beserta offset ketinggiannya
+      const tx = rawX * 0.09;
+      const ty = rawY * 0.09 + 0.1;
+      const tz = rawZ * 0.09;
+
+      // Memisahkan logika kamera untuk 2 kelompok gedung berdasarkan koordinat X
+      let targetCamX, targetCamY, targetCamZ;
+
+      if (rawX < 9) {
+        // Kelompok Marker 1 (X = 7.4): Settingan yang baru (menghadap dari luar)
+        targetCamX = tx - 0.3;
+        targetCamY = ty + 0.02; // Diturunkan agar tidak nyangkut kanopi
+        targetCamZ = tz + (tz > 0 ? 0.3 : -0.3); // Otomatis balik arah jika Z minus
+      } else {
+        // Kelompok Marker sisanya (X = 10.19): Settingan yang lama
+        targetCamX = tx + (tx > 0 ? 0.3 : -0.3);
+        targetCamY = ty + 0.02; // Diturunkan agar sejajar dengan pintu
+        targetCamZ = tz + (tz > 0 ? 0.3 : -0.3); // Otomatis balik arah jika Z minus
+      }
 
       const currentCam = state.camera.position;
       const currentTarget = controls.target;
@@ -181,7 +221,7 @@ function MarkerBadge({
   return (
     <Html
       position={marker.position}
-      distanceFactor={10}
+      distanceFactor={1} // Dikecilkan dari 10 menjadi 1 karena seluruh ukuran 3D kita di-scale menjadi 0.09
       center
       zIndexRange={[10, 0]}
     >
@@ -202,7 +242,9 @@ function MarkerBadge({
         }}
         className={cn(
           "relative group/marker cursor-pointer flex items-center justify-center w-8 h-8 transition-opacity duration-300",
-          isHidden ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
+          isHidden
+            ? "opacity-0 pointer-events-none"
+            : "opacity-100 pointer-events-auto",
         )}
       >
         {/* Efek Ping */}
@@ -314,6 +356,7 @@ export default function SceneViewer({
     null,
   );
   const [debugMode, setDebugMode] = useState(false);
+  const [showModel, setShowModel] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [shouldReset, setShouldReset] = useState(false);
   const { resolvedUrl, isPreparing } = useCachedModelUrl(modelUrl);
@@ -363,8 +406,10 @@ export default function SceneViewer({
       <Canvas
         shadows={{ type: THREE.PCFShadowMap }}
         dpr={[1, 2]}
-        camera={{ position: [10, 0, 0], fov: 45 }}
+        camera={{ position: [1.59, 0.53, 1.57], fov: 36.87 }} // Disamakan dengan FOV bawaan Mapbox (36.87 derajat)
+        gl={{ alpha: true }}
       >
+        <MapboxSync baseLng={110.4344775953449} baseLat={-7.054295872291664} />
         <QueryClientProvider client={queryClient}>
           {isPreparing && <LoadingOverlay />}
           <Suspense fallback={<LoadingOverlay />}>
@@ -375,20 +420,25 @@ export default function SceneViewer({
               setIsTransitioning={setIsTransitioning}
               shouldReset={shouldReset}
               onResetComplete={() => setShouldReset(false)}
+              debugMode={debugMode}
             />
-            <Stage
-              environment="city"
-              intensity={0.5}
-              shadows={{ type: "contact", opacity: 0.7, blur: 2 }}
-              adjustCamera={false}
-            >
-              {!isPreparing && (
+            <Environment preset="city" />
+            <ambientLight intensity={0.5} />
+            <directionalLight
+              position={[10, 20, 10]}
+              intensity={1}
+              castShadow
+              shadow-mapSize={[1024, 1024]}
+            />
+
+            <group position={[0, 0.08, 0]} scale={[0.09, 0.09, 0.09]}>
+              {!isPreparing && showModel && (
                 <Model url={resolvedUrl} onDebugClick={handleDebugClick} />
               )}
 
               {/* Building Name Badge */}
               {buildingName && !isPreparing && (
-                <Html position={[0, 3.5, -0.5]} center zIndexRange={[100, 0]}>
+                <Html position={[8.5, 3, 0]} center zIndexRange={[100, 0]}>
                   <div className="flex flex-col items-center justify-center pointer-events-none">
                     <div className="px-5 py-2.5 bg-slate-950/80 backdrop-blur-md border border-cyan-500/50 rounded-xl relative">
                       <div className="absolute inset-0 rounded-xl overflow-hidden">
@@ -427,14 +477,21 @@ export default function SceneViewer({
                   />
                 );
               })}
-            </Stage>
+            </group>
+            <ContactShadows
+              position={[0, 0, 0]}
+              opacity={0.7}
+              blur={2}
+              scale={50}
+            />
           </Suspense>
         </QueryClientProvider>
         <OrbitControls
           ref={controlsRef}
           makeDefault
+          enablePan={false} // Dimatikan agar sinkronisasi dengan Mapbox tidak rusak
           minPolarAngle={0}
-          maxPolarAngle={Math.PI / 1.75}
+          maxPolarAngle={85 * (Math.PI / 180)} // Dibatasi maksimal 85 derajat agar sama persis dengan batas pitch maksimal Mapbox
           onStart={() => {
             // User manually interacted with the canvas! Instantly cancel active flights
             setIsTransitioning(false);
@@ -459,19 +516,34 @@ export default function SceneViewer({
         </button>
 
         {showMarkerTool && (
-          <button
-            onClick={() => setDebugMode(!debugMode)}
-            className={`flex items-center justify-center gap-2 px-3 py-2 backdrop-blur-md border text-[10px] font-semibold rounded-lg transition-all active:scale-95 shadow-[0_4px_15px_rgba(0,0,0,0.3)] ${
-              debugMode
-                ? "bg-red-500/20 border-red-500/40 text-red-400 hover:bg-red-500/30"
-                : "bg-slate-950/60 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/40"
-            }`}
-          >
-            <div
-              className={`w-1.5 h-1.5 rounded-full ${debugMode ? "bg-red-400 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" : "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"}`}
-            />
-            {debugMode ? "Marker Tool: On" : "Marker Tool: Off"}
-          </button>
+          <>
+            <button
+              onClick={() => setShowModel(!showModel)}
+              className={`flex items-center justify-center gap-2 px-3 py-2 backdrop-blur-md border text-[10px] font-semibold rounded-lg transition-all active:scale-95 shadow-[0_4px_15px_rgba(0,0,0,0.3)] ${
+                !showModel
+                  ? "bg-amber-500/20 border-amber-500/40 text-amber-400 hover:bg-amber-500/30"
+                  : "bg-slate-950/60 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/40"
+              }`}
+            >
+              <div
+                className={`w-1.5 h-1.5 rounded-full ${!showModel ? "bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.8)]" : "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"}`}
+              />
+              {showModel ? "3D Model: Visible" : "3D Model: Hidden"}
+            </button>
+            <button
+              onClick={() => setDebugMode(!debugMode)}
+              className={`flex items-center justify-center gap-2 px-3 py-2 backdrop-blur-md border text-[10px] font-semibold rounded-lg transition-all active:scale-95 shadow-[0_4px_15px_rgba(0,0,0,0.3)] ${
+                debugMode
+                  ? "bg-red-500/20 border-red-500/40 text-red-400 hover:bg-red-500/30"
+                  : "bg-slate-950/60 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/40"
+              }`}
+            >
+              <div
+                className={`w-1.5 h-1.5 rounded-full ${debugMode ? "bg-red-400 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" : "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"}`}
+              />
+              {debugMode ? "Marker Tool: On" : "Marker Tool: Off"}
+            </button>
+          </>
         )}
       </div>
 
