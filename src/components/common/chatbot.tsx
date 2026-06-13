@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 const emptySubscribe = () => () => {};
 import { AnimatePresence, motion } from "framer-motion";
 import { Send, User, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
@@ -222,7 +223,7 @@ export function Chatbot() {
               </div>
 
               <div className="flex-1 p-0">
-                <ScrollArea className="h-[380px] p-4">
+                <ScrollArea className="h-[390px] p-4">
                   <div className="flex flex-col gap-4">
                     {messages.map((message) =>
                       message.sender === "system" ? (
@@ -339,11 +340,14 @@ export function Chatbot() {
       </AnimatePresence>
 
       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-        <Button
+        <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex h-12 items-center justify-center rounded-xl border border-cyan-400/50 bg-cyan-600 p-0 text-white shadow-lg transition-all duration-300 hover:bg-cyan-500 overflow-hidden ${
-            isOpen ? "w-12" : "w-[135px]"
-          }`}
+          className={cn(
+            "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(0,0,0,0.3)]",
+            isOpen
+              ? "bg-cyan-900/40 border-cyan-500/40 text-cyan-300"
+              : "bg-slate-950/60 border-cyan-500/20 text-cyan-400 hover:bg-slate-900/60 hover:border-cyan-500/40",
+          )}
         >
           <AnimatePresence mode="wait">
             {isOpen ? (
@@ -355,7 +359,7 @@ export function Chatbot() {
                 transition={{ duration: 0.15 }}
                 className="flex items-center justify-center"
               >
-                <X className="h-6 w-6" />
+                <X className="h-4 w-4" />
               </motion.div>
             ) : (
               <motion.div
@@ -364,22 +368,19 @@ export function Chatbot() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.15 }}
-                className="flex items-center gap-2 whitespace-nowrap"
+                className="flex items-center justify-center"
               >
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white">
-                  <Image
-                    src="/logo.png"
-                    alt="Logo"
-                    width={16}
-                    height={16}
-                    className="object-contain"
-                  />
-                </div>
-                <span className="font-semibold tracking-wide">Assistant</span>
+                <Image
+                  src="/logo.png"
+                  alt="Logo"
+                  width={22}
+                  height={22}
+                  className="object-contain"
+                />
               </motion.div>
             )}
           </AnimatePresence>
-        </Button>
+        </button>
       </motion.div>
     </div>
   );

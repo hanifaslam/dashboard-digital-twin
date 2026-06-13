@@ -24,7 +24,7 @@ export function ScheduleTab({ roomId }: ScheduleTabProps) {
         </span>
       </div>
 
-      <div className="relative z-10 flex-1 overflow-y-auto -mx-5 bg-slate-950 px-5 custom-scrollbar">
+      <div className="relative z-10 flex-1 overflow-y-auto -mx-5 bg-slate-950 px-5 custom-scrollbar min-h-0">
         <div className="flex flex-col gap-3 pb-5">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (

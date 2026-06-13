@@ -5,6 +5,7 @@ import Map, { MapProvider, useMap } from "react-map-gl/mapbox";
 import SceneViewer from "./scene-viewer";
 import { useEffect, useState } from "react";
 import type { Map as MapboxMap } from "mapbox-gl";
+import { MapStyleSelector, MapStyleId, MAP_STYLES } from "./map-style-selector";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -85,7 +86,10 @@ function Mapbox3DBuildings() {
 export default function MapboxScene(
   props: React.ComponentProps<typeof SceneViewer>,
 ) {
-  const [mapStyle, setMapStyle] = useState("mapbox://styles/mapbox/streets-v12");
+  const [selectedStyleId, setSelectedStyleId] = useState<MapStyleId>("auto");
+  const [mapStyle, setMapStyle] = useState(
+    "mapbox://styles/mapbox/streets-v12",
+  );
   const [isNight, setIsNight] = useState(false);
 
   useEffect(() => {
@@ -94,22 +98,45 @@ export default function MapboxScene(
       const hour = new Date().getHours();
       const night = hour >= 18 || hour < 6;
       setIsNight(night);
-      setMapStyle(
-        night
-          ? "mapbox://styles/mapbox/dark-v11"
-          : "mapbox://styles/mapbox/streets-v12",
-      );
+
+      if (selectedStyleId === "auto") {
+        setMapStyle(
+          night
+            ? "mapbox://styles/mapbox/dark-v11"
+            : "mapbox://styles/mapbox/streets-v12",
+        );
+      } else {
+        const style = MAP_STYLES.find((s) => s.id === selectedStyleId);
+        if (style) {
+          setMapStyle(style.url);
+          // Sinkronisasi isNight agar pencahayaan ThreeJS ikut menyesuaikan tema peta
+          if (style.id === "dark" || style.id === "satellite") {
+            setIsNight(true);
+          } else if (
+            style.id === "light" ||
+            style.id === "streets" ||
+            style.id === "outdoors"
+          ) {
+            setIsNight(false);
+          }
+        }
+      }
     };
 
     updateMapStyle();
     // Update setiap 1 menit untuk cek perubahan siang/malam
     const interval = setInterval(updateMapStyle, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedStyleId]);
 
   return (
     <MapProvider>
       <div className="relative w-full h-full bg-slate-900">
+        <style>{`
+          .mapboxgl-ctrl-logo {
+            display: none !important;
+          }
+        `}</style>
         <Map
           id="main-map"
           mapboxAccessToken={MAPBOX_TOKEN}
@@ -122,6 +149,7 @@ export default function MapboxScene(
           }}
           mapStyle={mapStyle}
           interactive={false}
+          attributionControl={false}
           style={{
             position: "absolute",
             top: 0,
@@ -135,7 +163,12 @@ export default function MapboxScene(
 
         {/* Overlay ThreeJS on top */}
         <div className="absolute inset-0 pointer-events-auto z-10">
-          <SceneViewer {...props} isNight={isNight} />
+          <SceneViewer
+            {...props}
+            isNight={isNight}
+            currentStyleId={selectedStyleId}
+            onStyleSelect={setSelectedStyleId}
+          />
         </div>
       </div>
     </MapProvider>

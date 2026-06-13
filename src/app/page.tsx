@@ -16,6 +16,7 @@ import {
 } from "@/app/_components/dashboard/dashboard-config";
 import { EnergyMonitoringCard } from "@/app/_components/dashboard/energy-monitoring-card";
 import { RoomDirectoryPanel } from "@/app/_components/dashboard/room-directory-panel";
+import { LiveCctvPanel } from "@/app/_components/dashboard/live-cctv-panel";
 import { buildSparklinePoints } from "@/app/_components/dashboard/dashboard-utils";
 import { WeatherSummaryCard } from "@/app/_components/weather-summary-card";
 import {
@@ -187,46 +188,62 @@ export default function Home() {
         />
       </div>
 
-      <div className="absolute left-1/2 top-4 z-20 hidden -translate-x-1/2 lg:flex lg:flex-row lg:gap-2">
-        <BuildingSelector
-          buildings={buildings}
-          selectedBuilding={activeBuildingId}
-          onSelect={handleBuildingChange}
-        />
-        {process.env.NEXT_PUBLIC_ENABLE_MARKER_TOOL === "true" && (
-          <ModelSelector
-            activeModel={activeModel}
-            onModelChange={setActiveModel}
+      <div className="absolute left-4 right-16 top-4 z-20 flex flex-col lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:flex-row gap-2">
+        <div className="w-full lg:w-auto">
+          <BuildingSelector
+            buildings={buildings}
+            selectedBuilding={activeBuildingId}
+            onSelect={handleBuildingChange}
           />
-        )}
-        <FloorSelector
-          floors={[1, 2]}
-          activeFloor={activeFloor}
-          onSelect={setActiveFloor}
-        />
+        </div>
+        <div className="flex gap-2">
+          {process.env.NEXT_PUBLIC_ENABLE_MARKER_TOOL === "true" && (
+            <ModelSelector
+              activeModel={activeModel}
+              onModelChange={setActiveModel}
+            />
+          )}
+          <FloorSelector
+            floors={[1, 2]}
+            activeFloor={activeFloor}
+            onSelect={setActiveFloor}
+          />
+        </div>
       </div>
 
-      <div className="pointer-events-auto absolute left-4 top-4 z-20 flex max-h-[85%] flex-col gap-4 overflow-hidden">
-        <div className="hidden lg:block w-80">
+      <div className="pointer-events-none absolute bottom-20 left-4 lg:top-4 max-lg:top-auto max-lg:max-h-[45vh] z-20 flex flex-col gap-4 overflow-hidden max-lg:right-4">
+        <div className="hidden lg:block w-80 shrink-0 pointer-events-auto">
           <WeatherSummaryCard />
         </div>
 
-        <RoomDirectoryPanel
-          markers={filteredMarkers}
-          selectedRoomId={selectedRoomId}
-          searchQuery={searchQuery}
-          activeFilter={activeFilter}
-          onSearchChange={setSearchQuery}
-          onClearSearch={() => setSearchQuery("")}
-          onFilterChange={setActiveFilter}
-          onRoomSelect={handleRoomSelect}
-        />
+        <div className="hidden lg:block w-80 shrink-0 pointer-events-auto">
+          <LiveCctvPanel />
+        </div>
+
+        <div className="pointer-events-auto max-lg:w-full lg:w-80 max-lg:mt-auto flex-1 min-h-0 flex-col hidden lg:flex">
+          <RoomDirectoryPanel
+            buildingLabel={
+              activeBuilding?.name ??
+              (isBuildingsLoading
+                ? "Loading building..."
+                : "No building selected")
+            }
+            markers={filteredMarkers}
+            selectedRoomId={selectedRoomId}
+            searchQuery={searchQuery}
+            activeFilter={activeFilter}
+            onSearchChange={setSearchQuery}
+            onClearSearch={() => setSearchQuery("")}
+            onFilterChange={setActiveFilter}
+            onRoomSelect={handleRoomSelect}
+          />
+        </div>
       </div>
 
       <div
         className={cn(
-          "pointer-events-auto absolute right-4 top-4 z-20 flex flex-col gap-4 transition-[width] duration-300",
-          selectedRoomId ? "w-[380px]" : "w-80",
+          "pointer-events-none absolute right-4 lg:top-4 top-36 z-20 flex flex-col gap-4 transition-[width] duration-300 max-lg:left-4 max-lg:bottom-auto lg:bottom-20",
+          selectedRoomId ? "lg:w-[380px] w-auto" : "lg:w-80 w-auto",
         )}
       >
         <AnimatePresence mode="wait">
@@ -237,7 +254,7 @@ export default function Home() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 32 }}
               transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="w-80 self-end shrink-0"
+              className="pointer-events-auto max-lg:w-full lg:w-80 self-end shrink-0 hidden lg:block"
             >
               <EnergyMonitoringCard
                 buildingLabel={
@@ -271,7 +288,7 @@ export default function Home() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 32 }}
               transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="tech-card flex h-[calc(100vh-120px)] w-full flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-lg backdrop-blur-xl"
+              className="pointer-events-auto tech-card flex max-lg:h-[45vh] lg:h-full w-full flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-lg backdrop-blur-xl"
             >
               <MarkerInfoCard
                 id={selectedRoomId}
@@ -287,7 +304,7 @@ export default function Home() {
         </AnimatePresence>
       </div>
 
-      <div className="pointer-events-auto absolute bottom-4 left-4 right-4 z-20">
+      <div className="pointer-events-auto absolute bottom-4 left-4 lg:right-4 max-lg:right-20 z-20 hidden lg:block">
         <ActivityLogBar latestLog={activityLogs[0] ?? null} />
       </div>
     </main>

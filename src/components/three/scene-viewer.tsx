@@ -16,18 +16,19 @@ import {
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
   RotateCcw,
-  RotateCw,
+  Camera,
   Plus,
   Minus,
   ArrowUp,
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  Camera,
+  RotateCw,
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MapStyleSelector, MapStyleId } from "./map-style-selector";
 import { LecturerRoomIcon } from "@/components/icons/lecturer-room-icon";
 import { ClassRoomIcon } from "@/components/icons/class-room-icon";
 import { useCachedModelUrl } from "@/components/three/use-cached-model-url";
@@ -397,6 +398,8 @@ interface SceneViewerProps {
   buildingName?: string | null;
   buildingBadgePosition?: [number, number, number];
   isNight?: boolean;
+  currentStyleId?: MapStyleId;
+  onStyleSelect?: (id: MapStyleId) => void;
 }
 
 export default function SceneViewer({
@@ -407,6 +410,8 @@ export default function SceneViewer({
   buildingName,
   buildingBadgePosition,
   isNight = false,
+  currentStyleId,
+  onStyleSelect,
 }: SceneViewerProps) {
   const showMarkerTool =
     process.env.NODE_ENV === "development" &&
@@ -465,19 +470,19 @@ export default function SceneViewer({
       window.cancelAnimationFrame(manualAnimFrameRef.current);
       manualAnimFrameRef.current = null;
     }
-    
+
     continuousActionRef.current = action;
     let lastTime = performance.now();
-    
+
     const loop = (time: number) => {
       if (!continuousActionRef.current) return;
       const delta = (time - lastTime) / 1000;
       lastTime = time;
-      
+
       continuousActionRef.current(delta);
       continuousFrameRef.current = window.requestAnimationFrame(loop);
     };
-    
+
     continuousFrameRef.current = window.requestAnimationFrame(loop);
   };
 
@@ -496,7 +501,7 @@ export default function SceneViewer({
   const handlePointerDown = (
     e: React.PointerEvent<HTMLButtonElement>,
     clickAction: () => void,
-    continuousAction: (delta: number) => void
+    continuousAction: (delta: number) => void,
   ) => {
     e.preventDefault();
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -512,17 +517,18 @@ export default function SceneViewer({
   };
 
   const handlePointerCancel = () => stopContinuousAction();
-  const handleContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault();
+  const handleContextMenu = (e: React.MouseEvent<HTMLButtonElement>) =>
+    e.preventDefault();
 
   const manualAnimFrameRef = useRef<number | null>(null);
 
   const animateCameraTo = (
     targetPos: THREE.Vector3,
     targetLookAt: THREE.Vector3,
-    durationMs = 300
+    durationMs = 300,
   ) => {
     if (!controlsRef.current) return;
-    
+
     if (manualAnimFrameRef.current !== null) {
       window.cancelAnimationFrame(manualAnimFrameRef.current);
     }
@@ -530,26 +536,26 @@ export default function SceneViewer({
     const camera = controlsRef.current.object;
     const startPos = camera.position.clone();
     const startLookAt = controlsRef.current.target.clone();
-    
+
     const startTime = performance.now();
-    
+
     const animate = (time: number) => {
       const elapsed = time - startTime;
       const progress = Math.min(elapsed / durationMs, 1);
       // easeOutCubic
       const ease = 1 - Math.pow(1 - progress, 3);
-      
+
       camera.position.lerpVectors(startPos, targetPos, ease);
       controlsRef.current!.target.lerpVectors(startLookAt, targetLookAt, ease);
       controlsRef.current!.update();
-      
+
       if (progress < 1) {
         manualAnimFrameRef.current = window.requestAnimationFrame(animate);
       } else {
         manualAnimFrameRef.current = null;
       }
     };
-    
+
     manualAnimFrameRef.current = window.requestAnimationFrame(animate);
   };
 
@@ -578,11 +584,11 @@ export default function SceneViewer({
     const target = controlsRef.current.target;
     const x = camera.position.x - target.x;
     const z = camera.position.z - target.z;
-    
+
     const targetPos = camera.position.clone();
     targetPos.x = target.x + x * Math.cos(angle) + z * Math.sin(angle);
     targetPos.z = target.z - x * Math.sin(angle) + z * Math.cos(angle);
-    
+
     animateCameraTo(targetPos, target.clone());
   };
 
@@ -593,11 +599,11 @@ export default function SceneViewer({
     const target = controlsRef.current.target;
     const x = camera.position.x - target.x;
     const z = camera.position.z - target.z;
-    
+
     const targetPos = camera.position.clone();
     targetPos.x = target.x + x * Math.cos(angle) + z * Math.sin(angle);
     targetPos.z = target.z - x * Math.sin(angle) + z * Math.cos(angle);
-    
+
     animateCameraTo(targetPos, target.clone());
   };
 
@@ -609,15 +615,15 @@ export default function SceneViewer({
     const panSpeed = 0.1; // 10 meter per klik
     const moveX = dx * panSpeed;
     const moveZ = dz * panSpeed;
-    
+
     const targetPos = camera.position.clone();
     targetPos.x += moveX;
     targetPos.z += moveZ;
-    
+
     const targetLookAt = target.clone();
     targetLookAt.x += moveX;
     targetLookAt.z += moveZ;
-    
+
     animateCameraTo(targetPos, targetLookAt);
   };
 
@@ -625,19 +631,22 @@ export default function SceneViewer({
     if (!controlsRef.current) return;
     const camera = controlsRef.current.object;
     const target = controlsRef.current.target;
-    
+
     const offset = camera.position.clone().sub(target);
     const spherical = new THREE.Spherical().setFromVector3(offset);
-    
+
     spherical.phi += angleDiff;
-    
+
     const minPolarAngle = controlsRef.current.minPolarAngle;
     const maxPolarAngle = controlsRef.current.maxPolarAngle;
-    spherical.phi = Math.max(minPolarAngle, Math.min(maxPolarAngle, spherical.phi));
-    
+    spherical.phi = Math.max(
+      minPolarAngle,
+      Math.min(maxPolarAngle, spherical.phi),
+    );
+
     const targetOffset = new THREE.Vector3().setFromSpherical(spherical);
     const targetPos = target.clone().add(targetOffset);
-    
+
     animateCameraTo(targetPos, target.clone());
   };
 
@@ -646,14 +655,14 @@ export default function SceneViewer({
     const camera = controlsRef.current.object;
     const target = controlsRef.current.target;
     const dir = camera.position.clone().sub(target);
-    const moveFactor = 1 + (direction * 0.5 * delta); // 50% per second
+    const moveFactor = 1 + direction * 0.5 * delta; // 50% per second
     camera.position.copy(target).add(dir.multiplyScalar(moveFactor));
     controlsRef.current.update();
   };
 
   const handleContinuousRotate = (delta: number, direction: 1 | -1) => {
     if (!controlsRef.current) return;
-    const speed = 40 * (Math.PI / 180); 
+    const speed = 40 * (Math.PI / 180);
     const angle = direction * speed * delta;
     const camera = controlsRef.current.object;
     const target = controlsRef.current.target;
@@ -668,10 +677,10 @@ export default function SceneViewer({
     if (!controlsRef.current) return;
     const camera = controlsRef.current.object;
     const target = controlsRef.current.target;
-    const speed = 40; 
+    const speed = 40;
     const moveX = dx * speed * delta;
     const moveZ = dz * speed * delta;
-    
+
     camera.position.x += moveX;
     camera.position.z += moveZ;
     target.x += moveX;
@@ -685,15 +694,18 @@ export default function SceneViewer({
     const angleDiff = direction * speed * delta;
     const camera = controlsRef.current.object;
     const target = controlsRef.current.target;
-    
+
     const offset = camera.position.clone().sub(target);
     const spherical = new THREE.Spherical().setFromVector3(offset);
-    
+
     spherical.phi += angleDiff;
     const minPolarAngle = controlsRef.current.minPolarAngle;
     const maxPolarAngle = controlsRef.current.maxPolarAngle;
-    spherical.phi = Math.max(minPolarAngle, Math.min(maxPolarAngle, spherical.phi));
-    
+    spherical.phi = Math.max(
+      minPolarAngle,
+      Math.min(maxPolarAngle, spherical.phi),
+    );
+
     const targetOffset = new THREE.Vector3().setFromSpherical(spherical);
     camera.position.copy(target).add(targetOffset);
     controlsRef.current.update();
@@ -883,21 +895,6 @@ export default function SceneViewer({
         )}
       </div>
 
-      <div className="absolute bottom-4 left-4 text-[9px] text-cyan-400/60 pointer-events-none bg-slate-950/40 border border-cyan-500/10 px-3 py-1.5 rounded-md backdrop-blur-sm flex items-center gap-2 shadow-[inset_0_0_10px_rgba(6,182,212,0.05)]">
-        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_6px_rgba(34,197,94,0.8)]" />
-        <span>System Rendering: 3D View</span>
-        <span className="text-cyan-500/20">|</span>
-        <span>Markers: {markers.length}</span>
-        {debugMode && (
-          <>
-            <span className="text-cyan-500/20">|</span>
-            <span className="text-red-400 animate-pulse font-semibold">
-              Debug Active
-            </span>
-          </>
-        )}
-      </div>
-
       {/* Expandable Camera Controls Column */}
       <div
         className={cn(
@@ -905,9 +902,24 @@ export default function SceneViewer({
           selectedRoomId
             ? "pointer-events-none opacity-0 translate-y-12"
             : "pointer-events-auto opacity-100 translate-y-0",
-          "right-4 bottom-[140px] max-lg:bottom-[160px]",
+          "right-4 bottom-[135px] max-lg:bottom-[132px]",
         )}
       >
+        {/* Map Style Selector perfectly stacked on top of FAB */}
+        {currentStyleId && onStyleSelect && (
+          <div 
+            className={cn(
+              "absolute bottom-[56px] right-0 z-10 transition-all duration-300 origin-bottom",
+              isControlsOpen ? "opacity-0 scale-90 pointer-events-none" : "opacity-100 scale-100"
+            )}
+          >
+            <MapStyleSelector
+              currentStyleId={currentStyleId as MapStyleId}
+              onStyleSelect={(id) => onStyleSelect(id)}
+            />
+          </div>
+        )}
+
         <div
           className={cn(
             "flex origin-bottom-right transition-all duration-300 ease-out",
@@ -919,7 +931,11 @@ export default function SceneViewer({
           <div className="grid grid-cols-2 gap-1.5 bg-slate-950/80 p-2 rounded-2xl backdrop-blur-md border border-cyan-500/30 shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:border-cyan-500/60 transition-colors">
             {/* Zoom Controls */}
             <button
-              onPointerDown={(e) => handlePointerDown(e, handleZoomIn, (d) => handleContinuousZoom(d, -1))}
+              onPointerDown={(e) =>
+                handlePointerDown(e, handleZoomIn, (d) =>
+                  handleContinuousZoom(d, -1),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}
@@ -929,7 +945,11 @@ export default function SceneViewer({
               <Plus className="w-3.5 h-3.5" />
             </button>
             <button
-              onPointerDown={(e) => handlePointerDown(e, handleZoomOut, (d) => handleContinuousZoom(d, 1))}
+              onPointerDown={(e) =>
+                handlePointerDown(e, handleZoomOut, (d) =>
+                  handleContinuousZoom(d, 1),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}
@@ -941,7 +961,11 @@ export default function SceneViewer({
 
             {/* Rotate Controls */}
             <button
-              onPointerDown={(e) => handlePointerDown(e, handleRotateLeft, (d) => handleContinuousRotate(d, 1))}
+              onPointerDown={(e) =>
+                handlePointerDown(e, handleRotateLeft, (d) =>
+                  handleContinuousRotate(d, 1),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}
@@ -951,7 +975,11 @@ export default function SceneViewer({
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
             <button
-              onPointerDown={(e) => handlePointerDown(e, handleRotateRight, (d) => handleContinuousRotate(d, -1))}
+              onPointerDown={(e) =>
+                handlePointerDown(e, handleRotateRight, (d) =>
+                  handleContinuousRotate(d, -1),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}
@@ -963,7 +991,13 @@ export default function SceneViewer({
 
             {/* Tilt Controls */}
             <button
-              onPointerDown={(e) => handlePointerDown(e, () => handleTilt(-10 * (Math.PI / 180)), (d) => handleContinuousTilt(d, -1))}
+              onPointerDown={(e) =>
+                handlePointerDown(
+                  e,
+                  () => handleTilt(-10 * (Math.PI / 180)),
+                  (d) => handleContinuousTilt(d, -1),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}
@@ -973,7 +1007,13 @@ export default function SceneViewer({
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
             <button
-              onPointerDown={(e) => handlePointerDown(e, () => handleTilt(10 * (Math.PI / 180)), (d) => handleContinuousTilt(d, 1))}
+              onPointerDown={(e) =>
+                handlePointerDown(
+                  e,
+                  () => handleTilt(10 * (Math.PI / 180)),
+                  (d) => handleContinuousTilt(d, 1),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}
@@ -985,7 +1025,13 @@ export default function SceneViewer({
 
             {/* Pan Vertical */}
             <button
-              onPointerDown={(e) => handlePointerDown(e, () => handlePan(0, -1), (d) => handleContinuousPan(d, 0, -1))}
+              onPointerDown={(e) =>
+                handlePointerDown(
+                  e,
+                  () => handlePan(0, -1),
+                  (d) => handleContinuousPan(d, 0, -1),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}
@@ -995,7 +1041,13 @@ export default function SceneViewer({
               <ArrowUp className="w-3.5 h-3.5" />
             </button>
             <button
-              onPointerDown={(e) => handlePointerDown(e, () => handlePan(0, 1), (d) => handleContinuousPan(d, 0, 1))}
+              onPointerDown={(e) =>
+                handlePointerDown(
+                  e,
+                  () => handlePan(0, 1),
+                  (d) => handleContinuousPan(d, 0, 1),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}
@@ -1007,7 +1059,13 @@ export default function SceneViewer({
 
             {/* Pan Horizontal */}
             <button
-              onPointerDown={(e) => handlePointerDown(e, () => handlePan(-1, 0), (d) => handleContinuousPan(d, -1, 0))}
+              onPointerDown={(e) =>
+                handlePointerDown(
+                  e,
+                  () => handlePan(-1, 0),
+                  (d) => handleContinuousPan(d, -1, 0),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}
@@ -1017,7 +1075,13 @@ export default function SceneViewer({
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
             <button
-              onPointerDown={(e) => handlePointerDown(e, () => handlePan(1, 0), (d) => handleContinuousPan(d, 1, 0))}
+              onPointerDown={(e) =>
+                handlePointerDown(
+                  e,
+                  () => handlePan(1, 0),
+                  (d) => handleContinuousPan(d, 1, 0),
+                )
+              }
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               onContextMenu={handleContextMenu}

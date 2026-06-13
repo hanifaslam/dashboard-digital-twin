@@ -80,7 +80,7 @@ export function DeviceTab({ roomId }: DeviceTabProps) {
         </span>
       </div>
 
-      <div className="-mx-5 flex-1 overflow-y-auto px-5 custom-scrollbar">
+      <div className="-mx-5 flex-1 overflow-y-auto px-5 custom-scrollbar min-h-0">
         <div className="flex flex-col gap-3 pb-5">
           <div className="glass-card rounded-xl p-3.5 sm:p-4">
             <div className="mb-3 flex items-center gap-2">

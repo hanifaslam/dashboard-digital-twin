@@ -103,13 +103,6 @@ export function Header() {
           />
         </Link>
 
-        <div className="flex lg:hidden items-center gap-1 sm:gap-2 shrink-0">
-          <MobileMenuButton
-            isTransparent={isTransparent}
-            ariaLabel="Open Menu"
-          />
-        </div>
-
         <div className="hidden lg:flex items-center gap-4">
           <Link
             href="/"
@@ -132,7 +125,7 @@ export function Header() {
           <SystemClock variant="compact" className="hidden lg:flex" />
         </div>
 
-        <div className="hidden lg:flex items-center gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
           <div className="hidden xl:flex items-center gap-2">
             <SystemStatusPill
               icon={Cpu}
@@ -163,7 +156,7 @@ export function Header() {
                   isTransparent ? "bg-cyan-500/20" : "bg-muted"
                 }`}
               />
-              <div className="flex flex-col gap-1">
+              <div className="hidden sm:flex flex-col gap-1">
                 <div
                   className={`h-3 w-16 rounded animate-pulse ${
                     isTransparent ? "bg-cyan-500/20" : "bg-muted"
@@ -181,7 +174,7 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="flex items-center gap-2.5 pl-2.5 pr-4 h-10 hover:bg-cyan-500/10 bg-slate-950/60 backdrop-blur-md rounded-lg text-cyan-400 transition-all duration-300"
+                  className="flex items-center gap-1.5 sm:gap-2.5 px-2 sm:pl-2.5 sm:pr-4 h-10 hover:bg-cyan-500/10 bg-slate-950/60 backdrop-blur-md rounded-lg text-cyan-400 transition-all duration-300"
                 >
                   <Avatar
                     className={cn(
@@ -199,7 +192,7 @@ export function Header() {
                       <User className="h-4 w-4 text-cyan-400" />
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-semibold text-slate-100 hover:text-white transition-colors text-xs">
+                  <span className="hidden sm:inline-block font-semibold text-slate-100 hover:text-white transition-colors text-xs">
                     {user.name}
                   </span>
                   <ChevronDown className="h-4 w-4 text-cyan-400/80" />
@@ -207,15 +200,8 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-48 bg-slate-950/90 backdrop-blur-md border border-cyan-500/20 text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+                className="min-w-0 w-fit px-1 bg-slate-950/90 backdrop-blur-md border border-cyan-500/20 text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
               >
-                {/* <DropdownMenuItem
-                  className="text-xs hover:bg-cyan-500/10 focus:bg-cyan-500/10 focus:text-cyan-400 cursor-pointer font-medium"
-                  onClick={() => router.push("/profile/profile")}
-                >
-                  <UserIcon className="h-4 w-4 mr-2 text-cyan-400" />
-                  Profile
-                </DropdownMenuItem> */}
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 focus:text-red-400 cursor-pointer text-xs font-medium"
@@ -229,7 +215,7 @@ export function Header() {
             <div className="flex items-center gap-2">
               <Button
                 variant={"outline"}
-                className="h-9 border border-cyan-500/20 bg-slate-950/60 px-6 text-xs font-semibold text-white transition-all hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-white"
+                className="h-9 border border-cyan-500/20 bg-slate-950/60 px-4 sm:px-6 text-xs font-semibold text-white transition-all hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-white"
                 onClick={() => authModal.open("login")}
               >
                 Login
@@ -263,31 +249,5 @@ function SystemStatusPill({
         </span>
       </div>
     </div>
-  );
-}
-
-function MobileMenuButton({
-  isTransparent,
-  ariaLabel,
-}: {
-  isTransparent: boolean;
-  ariaLabel: string;
-}) {
-  const context = useContext(MobileNavContext);
-
-  if (!context) return null;
-
-  return (
-    <button
-      onClick={context.toggle}
-      className={`p-2 rounded-full transition-colors ${
-        isTransparent
-          ? "text-white hover:bg-white/10"
-          : "text-foreground hover:bg-muted"
-      } shrink-0`}
-      aria-label={ariaLabel}
-    >
-      <Menu className="h-5 w-5" />
-    </button>
   );
 }

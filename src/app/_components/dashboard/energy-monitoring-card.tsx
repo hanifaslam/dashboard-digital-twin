@@ -5,6 +5,9 @@ import { TrendingDown, TrendingUp, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnimatePresence, motion } from "framer-motion";
 import { PanelShell } from "./panel-shell";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface EnergyMonitoringCardProps {
   buildingLabel: string;
@@ -36,13 +39,19 @@ export function EnergyMonitoringCard({
   const changeTone =
     (changePercent ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400";
   const hasTrendData = chartPoints.length > 0;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <PanelShell
       title="Energy Monitoring"
       icon={Zap}
       subtitle={buildingLabel}
-      className="w-full"
+      className={cn("w-full transition-all duration-300", !isExpanded && "shrink-0")}
+      headerContent={
+        <button onClick={() => setIsExpanded(!isExpanded)} className="text-white/50 hover:text-white transition-colors">
+          <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", !isExpanded && "rotate-180")} />
+        </button>
+      }
     >
       {isLoading ? (
         <div className="flex flex-col">
@@ -95,7 +104,7 @@ export function EnergyMonitoringCard({
           </div>
 
           <AnimatePresence initial={false}>
-            {!hideChart && (
+            {!hideChart && isExpanded && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { User, BookOpen, Clock, Phone, IdCard, ChevronDown } from "lucide-react";
+import { User, ChevronDown } from "lucide-react";
 import { useLecturerListQuery } from "@/hooks/api/digital-twin/use-lecturer";
 import { LecturerResponse } from "@/types/response/digital-twin/lecturer-response";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,7 +17,10 @@ interface LecturerTabProps {
 
 export function LecturerTab({ roomId }: LecturerTabProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: lecturers, isLoading } = useLecturerListQuery(roomId, searchQuery);
+  const { data: lecturers, isLoading } = useLecturerListQuery(
+    roomId,
+    searchQuery,
+  );
 
   return (
     <div className="w-full flex flex-col h-full overflow-hidden">
@@ -28,18 +31,21 @@ export function LecturerTab({ roomId }: LecturerTabProps) {
             Lecturer Status
           </span>
         </div>
-        <SearchInput 
-          placeholder="Search lecturer..." 
-          onSearch={setSearchQuery} 
+        <SearchInput
+          placeholder="Search lecturer..."
+          onSearch={setSearchQuery}
           className="w-full"
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto -mx-5 px-5 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto -mx-5 px-5 custom-scrollbar min-h-0">
         <div className="flex flex-col gap-3 pb-5">
           {isLoading ? (
             Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 w-full rounded-xl bg-white/10" />
+              <Skeleton
+                key={i}
+                className="h-28 w-full rounded-xl bg-white/10"
+              />
             ))
           ) : lecturers && lecturers.length > 0 ? (
             lecturers.map((lecturer, i) => (
@@ -59,7 +65,13 @@ export function LecturerTab({ roomId }: LecturerTabProps) {
   );
 }
 
-function LecturerCard({ lecturer, index }: { lecturer: LecturerResponse; index: number }) {
+function LecturerCard({
+  lecturer,
+  index,
+}: {
+  lecturer: LecturerResponse;
+  index: number;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -71,10 +83,14 @@ function LecturerCard({ lecturer, index }: { lecturer: LecturerResponse; index: 
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      
+
       <div className="flex items-start gap-4">
         <Avatar className="h-12 w-12 border-2 border-white/10 shadow-lg group-hover:border-cyan-500/40 transition-colors">
-          <AvatarImage src={lecturer.profile_picture || undefined} alt={lecturer.name} className="object-cover" />
+          <AvatarImage
+            src={lecturer.profile_picture || undefined}
+            alt={lecturer.name}
+            className="object-cover"
+          />
           <AvatarFallback className="bg-cyan-500/15 text-cyan-400 font-bold shadow-[inset_0_0_8px_rgba(6,182,212,0.1)]">
             {lecturer.name
               .split(" ")
@@ -92,20 +108,20 @@ function LecturerCard({ lecturer, index }: { lecturer: LecturerResponse; index: 
             <div className="flex-none">
               <StatusBadge status={lecturer.status} />
             </div>
-            <ChevronDown 
+            <ChevronDown
               className={cn(
                 "w-4 h-4 text-white/40 transition-transform duration-300 ml-1 flex-none",
-                isExpanded && "rotate-180"
-              )} 
+                isExpanded && "rotate-180",
+              )}
             />
           </div>
           <div className="mt-2 flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-xs text-white/60">
-              <BookOpen className="w-3 h-3 text-white/40" />
-              <span className="truncate">{lecturer.course || "No Active Course"}</span>
+              <span className="truncate">
+                {lecturer.course || "No Active Course"}
+              </span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-white/60">
-              <Clock className="w-3 h-3 text-white/40" />
               <span>{formatPresentSince(lecturer.present_since)}</span>
             </div>
           </div>
@@ -122,11 +138,12 @@ function LecturerCard({ lecturer, index }: { lecturer: LecturerResponse; index: 
           >
             <div className="flex flex-col gap-2 pt-3 mt-3 border-t border-white/10">
               <div className="flex items-center gap-2 text-xs text-white/70">
-                <IdCard className="w-3.5 h-3.5 text-cyan-400/70" />
-                <span><span className="text-white/40">NIP:</span> {lecturer.nip || "-"}</span>
+                <span>
+                  <span className="text-white/40">NIP:</span>{" "}
+                  {lecturer.nip || "-"}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-white/70">
-                <Phone className="w-3.5 h-3.5 text-cyan-400/70" />
                 <div className="flex items-center gap-1">
                   <span className="text-white/40">Phone:</span>
                   {lecturer.phone_number ? (
