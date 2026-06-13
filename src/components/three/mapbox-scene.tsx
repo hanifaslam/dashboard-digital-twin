@@ -3,7 +3,7 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 import Map, { MapProvider, useMap } from "react-map-gl/mapbox";
 import SceneViewer from "./scene-viewer";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Map as MapboxMap } from "mapbox-gl";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
@@ -85,6 +85,28 @@ function Mapbox3DBuildings() {
 export default function MapboxScene(
   props: React.ComponentProps<typeof SceneViewer>,
 ) {
+  const [mapStyle, setMapStyle] = useState("mapbox://styles/mapbox/streets-v12");
+  const [isNight, setIsNight] = useState(false);
+
+  useEffect(() => {
+    // Mengecek apakah waktu saat ini adalah malam hari (18:00 - 05:59)
+    const updateMapStyle = () => {
+      const hour = new Date().getHours();
+      const night = hour >= 18 || hour < 6;
+      setIsNight(night);
+      setMapStyle(
+        night
+          ? "mapbox://styles/mapbox/dark-v11"
+          : "mapbox://styles/mapbox/streets-v12",
+      );
+    };
+
+    updateMapStyle();
+    // Update setiap 1 menit untuk cek perubahan siang/malam
+    const interval = setInterval(updateMapStyle, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <MapProvider>
       <div className="relative w-full h-full bg-slate-900">
@@ -98,7 +120,7 @@ export default function MapboxScene(
             pitch: 45,
             bearing: 0,
           }}
-          mapStyle="mapbox://styles/mapbox/streets-v12"
+          mapStyle={mapStyle}
           interactive={false}
           style={{
             position: "absolute",
@@ -113,7 +135,7 @@ export default function MapboxScene(
 
         {/* Overlay ThreeJS on top */}
         <div className="absolute inset-0 pointer-events-auto z-10">
-          <SceneViewer {...props} />
+          <SceneViewer {...props} isNight={isNight} />
         </div>
       </div>
     </MapProvider>

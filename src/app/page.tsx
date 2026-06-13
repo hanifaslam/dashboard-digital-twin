@@ -6,8 +6,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MarkerInfoCard } from "@/app/_components/marker-info-card";
 import { ActivityLogBar } from "@/app/_components/dashboard/activity-log-bar";
 import { BuildingSelector } from "@/app/_components/dashboard/building-selector";
+import { FloorSelector } from "@/app/_components/dashboard/floor-selector";
 import { ModelSelector } from "@/app/_components/dashboard/model-selector";
 import {
+  BUILDING_MARKERS,
+  BUILDING_LABEL_POSITIONS,
   INITIAL_MARKERS,
   type RoomFilterId,
 } from "@/app/_components/dashboard/dashboard-config";
@@ -37,6 +40,7 @@ export default function Home() {
   const [activeModel, setActiveModel] = useState<string>(
     "/models/polines-main.glb",
   );
+  const [activeFloor, setActiveFloor] = useState<number>(1);
   const [activeFilter, setActiveFilter] = useState<RoomFilterId>("ALL");
   const { setActiveContext, setIsHidden, isOpen: isChatbotOpen } = useChatbot();
 
@@ -71,8 +75,13 @@ export default function Home() {
     activityLimit: 20,
   });
 
+  const activeMarkers = useMemo(() => {
+    if (!activeBuildingId) return INITIAL_MARKERS;
+    return BUILDING_MARKERS[activeBuildingId] || [];
+  }, [activeBuildingId]);
+
   const filteredMarkers = useMemo(() => {
-    return INITIAL_MARKERS.filter((marker) => {
+    return activeMarkers.filter((marker) => {
       const matchesSearch = marker.label
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
@@ -81,23 +90,26 @@ export default function Home() {
         return false;
       }
 
+      if (marker.floor !== activeFloor) {
+        return false;
+      }
+
       if (activeFilter === "DOSEN") {
-        return marker.label.toLowerCase().includes("dosen");
+        return marker.type === "dosen";
       }
 
       if (activeFilter === "CLASS") {
-        return (
-          marker.label.toLowerCase().includes("room") ||
-          marker.label.toLowerCase().includes("lab") ||
-          marker.label.toLowerCase().includes("sb")
-        );
+        return marker.type === "class";
       }
 
       return true;
     });
-  }, [activeFilter, searchQuery]);
+  }, [activeFilter, searchQuery, activeFloor, activeMarkers]);
 
-  const roomIds = useMemo(() => INITIAL_MARKERS.map((m) => m.id), []);
+  const roomIds = useMemo(
+    () => activeMarkers.map((m) => m.id),
+    [activeMarkers],
+  );
   const liveEnergyPoints = useLiveEnergyChart(roomIds);
 
   const chartPoints = useMemo(
@@ -163,10 +175,15 @@ export default function Home() {
       <div className="absolute inset-0 z-0 bg-slate-950">
         <MapboxScene
           modelUrl={activeModel}
-          markers={INITIAL_MARKERS}
+          markers={filteredMarkers}
           selectedRoomId={selectedRoomId}
           onMarkerClick={(marker) => setSelectedRoomId(marker.id)}
           buildingName={activeBuilding?.name}
+          buildingBadgePosition={
+            activeBuildingId
+              ? BUILDING_LABEL_POSITIONS[activeBuildingId]
+              : undefined
+          }
         />
       </div>
 
@@ -182,6 +199,11 @@ export default function Home() {
             onModelChange={setActiveModel}
           />
         )}
+        <FloorSelector
+          floors={[1, 2]}
+          activeFloor={activeFloor}
+          onSelect={setActiveFloor}
+        />
       </div>
 
       <div className="pointer-events-auto absolute left-4 top-4 z-20 flex max-h-[85%] flex-col gap-4 overflow-hidden">
@@ -254,7 +276,7 @@ export default function Home() {
               <MarkerInfoCard
                 id={selectedRoomId}
                 title={
-                  INITIAL_MARKERS.find((marker) => marker.id === selectedRoomId)
+                  activeMarkers.find((marker) => marker.id === selectedRoomId)
                     ?.label ?? "Asset Room"
                 }
                 onClose={() => setSelectedRoomId(null)}

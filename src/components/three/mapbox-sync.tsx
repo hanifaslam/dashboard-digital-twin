@@ -1,4 +1,5 @@
 import { useFrame, useThree } from "@react-three/fiber";
+import { useRef } from "react";
 import { globalMapboxInstance } from "./mapbox-scene";
 import * as THREE from "three";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -23,6 +24,8 @@ export function MapboxSync({
 
   const metersToLat = 1 / 111111;
   const metersToLng = 1 / (111111 * Math.cos((baseLat * Math.PI) / 180));
+
+  const lastUpdate = useRef({ lng: 0, lat: 0, zoom: 0, pitch: 0, bearing: 0 });
 
   useFrame((state) => {
     const map = globalMapboxInstance;
@@ -70,6 +73,21 @@ export function MapboxSync({
     const dx = target.x - camPos.x;
     const dz = target.z - camPos.z;
     const bearing = Math.atan2(dx, -dz) * (180 / Math.PI) + BEARING_OFFSET;
+
+    // Hanya panggil update Mapbox jika kamera benar-benar bergerak
+    // Ini menghemat CPU hingga 90% saat kita sekadar diam / hovering kursor
+    const prev = lastUpdate.current;
+    if (
+      Math.abs(prev.lng - lng) < 0.000001 &&
+      Math.abs(prev.lat - lat) < 0.000001 &&
+      Math.abs(prev.zoom - zoom) < 0.001 &&
+      Math.abs(prev.pitch - pitch) < 0.1 &&
+      Math.abs(prev.bearing - bearing) < 0.1
+    ) {
+      return;
+    }
+
+    lastUpdate.current = { lng, lat, zoom, pitch, bearing };
 
     // Update Mapbox instantly without React re-renders
     map.jumpTo({

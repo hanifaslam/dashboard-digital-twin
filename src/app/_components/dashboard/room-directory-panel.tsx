@@ -1,7 +1,7 @@
 "use client";
 
 import { Activity, Layers, Search, X } from "lucide-react";
-import type { ChangeEvent } from "react";
+import { type ChangeEvent, useEffect } from "react";
 
 import type { Marker } from "@/components/three/scene-viewer";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,15 @@ export function RoomDirectoryPanel({
   onFilterChange,
   onRoomSelect,
 }: RoomDirectoryPanelProps) {
+  useEffect(() => {
+    if (selectedRoomId) {
+      const element = document.getElementById(`room-button-${selectedRoomId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+  }, [selectedRoomId]);
+
   return (
     <PanelShell title="Room Directory" icon={Activity} className="w-80">
       <div className="relative">
@@ -80,6 +89,7 @@ export function RoomDirectoryPanel({
               return (
                 <button
                   key={marker.id}
+                  id={`room-button-${marker.id}`}
                   onClick={() => onRoomSelect(marker.id)}
                   className={cn(
                     "flex items-center justify-between rounded-lg border p-2.5 text-left transition-all duration-300",
