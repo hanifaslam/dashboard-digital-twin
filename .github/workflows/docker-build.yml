@@ -41,6 +41,7 @@ jobs:
             NEXT_PUBLIC_WEATHER_LONGITUDE=${{ vars.NEXT_PUBLIC_WEATHER_LONGITUDE }}
             NEXT_PUBLIC_WEATHER_TIMEZONE=${{ vars.NEXT_PUBLIC_WEATHER_TIMEZONE }}
             NEXT_PUBLIC_MAPBOX_TOKEN=${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN }}
+            NEXT_PUBLIC_CCTV_BASE_URL=${{ vars.NEXT_PUBLIC_CCTV_BASE_URL }}
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:staging

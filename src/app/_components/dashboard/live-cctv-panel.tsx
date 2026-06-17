@@ -37,9 +37,9 @@ export function LiveCctvPanel() {
     // Kamu bisa ganti stream key masing-masing lokasi di sini nanti
     switch (loc) {
       case "lorong-sb":
-        return "dosen-ik-cctv-01";
+        return "lorong-sb";
       default:
-        return "dosen-ik-cctv-01";
+        return "lorong-sb";
     }
   };
 
