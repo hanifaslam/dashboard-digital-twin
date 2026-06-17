@@ -1,9 +1,10 @@
 "use client";
 
-import { Video, ChevronDown } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, Maximize2 } from "lucide-react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import CCTVPlayer from "@/components/common/CCTVPlayer";
 
 import {
   DropdownMenu,
@@ -12,36 +13,33 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function LiveCctvPanel() {
   const [location, setLocation] = useState("tugu-teknik");
-  const [currentTime, setCurrentTime] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    const updateTime = () => {
-      setCurrentTime(
-        new Date().toISOString().replace("T", " ").substring(0, 19),
-      );
-    };
-
-    const timeout = setTimeout(updateTime, 0);
-    const interval = setInterval(updateTime, 1000);
-
-    return () => {
-      clearTimeout(timeout);
-      clearInterval(interval);
-    };
-  }, []);
 
   const getLocationLabel = (loc: string) => {
     switch (loc) {
-      case "lorong-sa":
-        return "Lorong SA";
       case "lorong-sb":
         return "Lorong SB";
       default:
         return "Lorong SB";
+    }
+  };
+
+  const getStreamKey = (loc: string) => {
+    // Kamu bisa ganti stream key masing-masing lokasi di sini nanti
+    switch (loc) {
+      case "lorong-sb":
+        return "dosen-ik-cctv-01";
+      default:
+        return "dosen-ik-cctv-01";
     }
   };
 
@@ -72,12 +70,6 @@ export function LiveCctvPanel() {
                 value={location}
                 onValueChange={setLocation}
               >
-                <DropdownMenuRadioItem
-                  value="lorong-sa"
-                  className="cursor-pointer text-xs focus:bg-cyan-500/10 focus:text-cyan-300"
-                >
-                  Lorong SA
-                </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem
                   value="lorong-sb"
                   className="cursor-pointer text-xs focus:bg-cyan-500/10 focus:text-cyan-300"
@@ -110,16 +102,38 @@ export function LiveCctvPanel() {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-cyan-500/20 bg-slate-900 mt-1">
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800/80">
-                <Video className="mb-2 h-6 w-6 text-cyan-500/50" />
-                <span className="text-xs text-cyan-500/50">Camera offline</span>
-              </div>
+            <div className="group relative aspect-video w-full overflow-hidden rounded-lg border border-cyan-500/20 bg-slate-900 mt-1">
+              <CCTVPlayer
+                key={`preview-${location}`}
+                streamKey={getStreamKey(location)}
+                className="absolute inset-0 h-full w-full object-cover"
+                controls={false}
+              />
 
-              <div className="absolute left-2 top-2 z-10 flex items-center rounded bg-black/60 px-1.5 py-0.5 text-[9px] font-medium text-white backdrop-blur-sm">
-                <span className="mr-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
-                {currentTime} | {getLocationLabel(location)}
-              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button className="absolute right-2 top-2 z-10 flex items-center justify-center rounded bg-black/60 p-1.5 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:bg-black/80">
+                    <Maximize2 className="h-3 w-3" />
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-5xl w-[95vw] border-0 bg-transparent p-0 shadow-none [&>button]:text-white">
+                  <DialogTitle className="sr-only">
+                    Live CCTV {getLocationLabel(location)}
+                  </DialogTitle>
+                  <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-cyan-500/20 bg-black shadow-2xl">
+                    <CCTVPlayer
+                      key={`modal-${location}`}
+                      streamKey={getStreamKey(location)}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      controls={false}
+                    />
+                    <div className="absolute left-4 top-10 z-10 flex items-center rounded bg-black/60 px-2 py-1 text-base font-medium text-white backdrop-blur-sm">
+                      <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                      {getLocationLabel(location)}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </motion.div>
         )}
