@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const MODELS = [
-  { id: "/models/polines-main.glb", name: "Polines Main" },
+  { id: "/models/polines-main.glb", name: "Polines Main Test" },
   { id: "/models/polines-test.glb", name: "Polines Test" },
+  { id: "/models/polines-main-fix.glb", name: "Polines Main" },
 ];
 
 interface ModelSelectorProps {
