@@ -28,3 +28,10 @@ export interface ListDeviceResponse {
     created_at: string;
   } | null;
 }
+
+export interface CCTVStreamResponse {
+  id: string;
+  name: string;
+  stream_url: string;
+  room_name: string;
+}

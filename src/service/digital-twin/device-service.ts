@@ -1,5 +1,5 @@
 import { API_ENDPOINT } from "@/types/endpoint";
-import { ListDeviceResponse } from "@/types/response/digital-twin/device-response";
+import { ListDeviceResponse, CCTVStreamResponse } from "@/types/response/digital-twin/device-response";
 import { api } from "@/lib/axios";
 import { BaseParams } from "@/types/global";
 
@@ -24,5 +24,8 @@ export const DeviceService = {
         command,
       }
     );
+  },
+  getCCTVStreams: async () => {
+    return api.get<CCTVStreamResponse>(API_ENDPOINT.DIGITAL_TWIN.DEVICE.CCTV_STREAMS);
   },
 };

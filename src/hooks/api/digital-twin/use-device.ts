@@ -34,3 +34,13 @@ export function useControlDeviceMutation() {
     },
   });
 }
+
+export function useCCTVStreamsQuery() {
+  return useQuery({
+    queryKey: ["cctv-streams"],
+    queryFn: async () => {
+      const resp = await DeviceService.getCCTVStreams();
+      return resp.data;
+    },
+  });
+}

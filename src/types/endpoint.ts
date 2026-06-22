@@ -23,6 +23,7 @@ export const API_ENDPOINT = {
     DEVICE: {
       BASE: "devices",
       CONTROL: "devices/:id/control",
+      CCTV_STREAMS: "devices/cctv/streams",
     },
   },
   DASHBOARD: {
