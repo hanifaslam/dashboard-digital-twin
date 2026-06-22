@@ -11,6 +11,8 @@ export function useLecturerListQuery(id: string, q?: string) {
     queryKey: LECTURER_QUERY_KEY.list(id, q),
     queryFn: () => LecturerService.list(id, q),
     enabled: !!id,
+    refetchOnMount: 'always',
+    staleTime: 0,
     select: (res) => res.data as LecturerResponse[]
   })
 }

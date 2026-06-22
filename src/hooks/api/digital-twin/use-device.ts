@@ -4,6 +4,8 @@ import { DeviceService, DeviceListParams } from "@/service/digital-twin/device-s
 export function useDeviceListQuery(params: DeviceListParams) {
   return useQuery({
     queryKey: ["devices", params],
+    refetchOnMount: 'always',
+    staleTime: 0,
     queryFn: async () => {
       const resp = await DeviceService.list(params);
       if (resp && resp.data) {

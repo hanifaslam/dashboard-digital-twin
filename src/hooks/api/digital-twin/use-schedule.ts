@@ -11,6 +11,8 @@ export function useScheduleListQuery(id: string) {
     queryKey: SCHEDULE_QUERY_KEY.list(id),
     queryFn: () => ScheduleService.list(id),
     enabled: !!id,
+    refetchOnMount: 'always',
+    staleTime: 0,
     select: (res) => res.data as ScheduleResponse[]
   })
 }
