@@ -98,14 +98,14 @@ export const BUILDING_MARKERS: Record<string, Marker[]> = {
     {
       id: "cmpu1e8sk000s01qmmuvw19hm",
       position: [7.4, -0.5, 1.5],
-      label: "LAB Pemograman",
+      label: "Lab Pemograman",
       type: "class",
       floor: 2,
     },
     {
       id: "cmqt2z438001501pgkay8byvi",
       position: [7.4, -0.5, 0.3],
-      label: "SB 206",
+      label: "Lab Jaringan Komputer",
       type: "class",
       floor: 2,
     },
@@ -133,14 +133,14 @@ export const BUILDING_MARKERS: Record<string, Marker[]> = {
     {
       id: "cmqrheczq000e01pg6j94914j",
       position: [10, -0.5, 1.5],
-      label: "SB 202",
+      label: "Lab Multimedia",
       type: "class",
       floor: 2,
     },
     {
       id: "cmqt309h5001601pgcfynq7r6",
       position: [10, -0.5, 0.3],
-      label: "SB 201",
+      label: "Lab Komputer",
       type: "class",
       floor: 2,
     },
