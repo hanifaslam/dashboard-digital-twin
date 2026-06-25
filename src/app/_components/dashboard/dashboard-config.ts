@@ -89,7 +89,7 @@ export const BUILDING_MARKERS: Record<string, Marker[]> = {
       floor: 1,
     },
     {
-      id: "cmoa65k7h0000xcbcu6nbkss",
+      id: "cmqt4iv7v000m01ph6q0ujo90",
       position: [7.4, -0.5, 3.5],
       label: "SB 204",
       type: "class",
@@ -110,21 +110,21 @@ export const BUILDING_MARKERS: Record<string, Marker[]> = {
       floor: 2,
     },
     {
-      id: "cmoa65k7h0000xcbcu6nbkgg",
+      id: "cmqt4k1i7000o01phykrqe9zz",
       position: [7.4, -0.5, -1],
       label: "SB 207",
       type: "class",
       floor: 2,
     },
     {
-      id: "cmoa65k7h0000xcbcu6nbkpp",
+      id: "cmqt4k7un000p01pho8djshzy",
       position: [7.4, -0.5, -3],
       label: "SB 208",
       type: "dosen",
       floor: 2,
     },
     {
-      id: "cmnbrqec6000201o4myc9jd93",
+      id: "cmqt4jns5000n01phuoji9mmr",
       position: [10, -0.5, 3.5],
       label: "SB 203",
       type: "class",
@@ -145,7 +145,7 @@ export const BUILDING_MARKERS: Record<string, Marker[]> = {
       floor: 2,
     },
     {
-      id: "cmoa65k7h0000xcbcu6nbk22",
+      id: "cmqt4kta5000q01phx3x8izwm",
       position: [10, -0.5, -2.7],
       label: "R. Kajur EL",
       type: "dosen",
