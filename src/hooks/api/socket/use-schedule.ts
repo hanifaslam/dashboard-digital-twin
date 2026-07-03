@@ -29,6 +29,7 @@ export function useScheduleListQuery(id: string) {
 
     socket.on('connect', requestData);
     socket.on('room-schedules:data', handleData);
+    socket.on('schedule-updated', requestData);
 
     if (socket.connected) {
       requestData();
@@ -37,6 +38,7 @@ export function useScheduleListQuery(id: string) {
     return () => {
       socket.off('connect', requestData);
       socket.off('room-schedules:data', handleData);
+      socket.off('schedule-updated', requestData);
     };
   }, [id, queryClient]);
 

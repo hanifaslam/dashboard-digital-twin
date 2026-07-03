@@ -25,10 +25,10 @@ export function useLecturerListQuery(id: string, q?: string) {
       room_id: string;
       lecturers: LecturerResponse[];
     }) => {
-      console.log(
-        `[Socket] Received room-lecturers:data for room ${payload.room_id}:`,
-        payload.lecturers,
-      );
+      // console.log(
+      //   `[Socket] Received room-lecturers:data for room ${payload.room_id}:`,
+      //   payload.lecturers,
+      // );
       if (payload.room_id === id) {
         queryClient.setQueryData(
           LECTURER_QUERY_KEY.list(id, q),
