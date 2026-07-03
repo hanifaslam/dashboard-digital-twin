@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { User, ChevronDown } from "lucide-react";
-import { useLecturerListQuery } from "@/hooks/api/digital-twin/use-lecturer";
+import { useLecturerListQuery } from "@/hooks/api/socket/use-lecturer";
 import { LecturerResponse } from "@/types/response/digital-twin/lecturer-response";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
