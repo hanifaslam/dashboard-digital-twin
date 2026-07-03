@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar } from "lucide-react";
-import { useScheduleListQuery } from "@/hooks/api/digital-twin/use-schedule";
+import { useScheduleListQuery } from "@/hooks/api/socket/use-schedule";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";

@@ -39,7 +39,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [activeModel, setActiveModel] = useState<string>(
-    "/models/polines-main-fix.glb",
+    "/models/polines-final.glb",
   );
   const [activeFloor, setActiveFloor] = useState<number>(1);
   const [activeFilter, setActiveFilter] = useState<RoomFilterId>("ALL");

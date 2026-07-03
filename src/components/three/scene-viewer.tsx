@@ -32,7 +32,7 @@ import { MapStyleSelector, MapStyleId } from "./map-style-selector";
 import { LecturerRoomIcon } from "@/components/icons/lecturer-room-icon";
 import { ClassRoomIcon } from "@/components/icons/class-room-icon";
 import { useCachedModelUrl } from "@/components/three/use-cached-model-url";
-import { useScheduleListQuery } from "@/hooks/api/digital-twin/use-schedule";
+import { useScheduleListQuery } from "@/hooks/api/socket/use-schedule";
 import { MapboxSync } from "./mapbox-sync";
 
 export interface Marker {
@@ -238,11 +238,15 @@ function MarkerBadge({
   isActive,
   isHidden,
   onMarkerClick,
+  onHover,
+  onHoverOut,
 }: {
   marker: Marker;
   isActive: boolean;
   isHidden?: boolean;
   onMarkerClick?: (marker: Marker) => void;
+  onHover?: () => void;
+  onHoverOut?: () => void;
 }) {
   const { data: schedules } = useScheduleListQuery(marker.id);
   const isOccupied = schedules?.some((s) => s.is_online);
@@ -275,6 +279,8 @@ function MarkerBadge({
           }
         }}
         onPointerUp={(e) => e.stopPropagation()}
+        onPointerEnter={() => onHover?.()}
+        onPointerLeave={() => onHoverOut?.()}
         className={cn(
           "relative group/marker cursor-pointer flex items-center justify-center w-8 h-8 transition-opacity duration-300",
           isHidden
@@ -426,6 +432,7 @@ export default function SceneViewer({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [shouldReset, setShouldReset] = useState(false);
   const [isControlsOpen, setIsControlsOpen] = useState(false);
+  const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
   const { resolvedUrl, isPreparing, downloadProgress } =
     useCachedModelUrl(modelUrl);
 
@@ -808,7 +815,10 @@ export default function SceneViewer({
 
               {markers.map((marker) => {
                 const isActive = activeMarkerId === marker.id;
-                const isHidden = !!activeMarkerId && !isActive;
+                const isHovered = hoveredMarkerId === marker.id;
+                const isHidden =
+                  (!!activeMarkerId && !isActive) ||
+                  (!!hoveredMarkerId && !isHovered && !isActive);
                 return (
                   <MarkerBadge
                     key={marker.id}
@@ -816,6 +826,8 @@ export default function SceneViewer({
                     isActive={isActive}
                     isHidden={isHidden}
                     onMarkerClick={onMarkerClick}
+                    onHover={() => setHoveredMarkerId(marker.id)}
+                    onHoverOut={() => setHoveredMarkerId(null)}
                   />
                 );
               })}
@@ -907,10 +919,12 @@ export default function SceneViewer({
       >
         {/* Map Style Selector perfectly stacked on top of FAB */}
         {currentStyleId && onStyleSelect && (
-          <div 
+          <div
             className={cn(
               "absolute bottom-[56px] right-0 z-10 transition-all duration-300 origin-bottom",
-              isControlsOpen ? "opacity-0 scale-90 pointer-events-none" : "opacity-100 scale-100"
+              isControlsOpen
+                ? "opacity-0 scale-90 pointer-events-none"
+                : "opacity-100 scale-100",
             )}
           >
             <MapStyleSelector
