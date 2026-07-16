@@ -93,7 +93,7 @@ export function MobileNav() {
               src="/logo.png"
               alt="Dashboard"
               fill
-              className="object-contain object-left"
+              className="object-contain object-left brightness-0 invert"
               priority
             />
           </Link>

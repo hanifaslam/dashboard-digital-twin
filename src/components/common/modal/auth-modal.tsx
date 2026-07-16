@@ -47,7 +47,7 @@ export function AuthModal() {
                   alt="Logo"
                   width={512}
                   height={512}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain brightness-0 invert"
                 />
               </div>
               <span className="text-xl font-semibold">

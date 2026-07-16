@@ -12,19 +12,10 @@ import { useAuth } from "@/hooks/use-auth";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ChevronDown,
-  Cpu,
-  LogOut,
-  Menu,
-  RefreshCw,
-  User,
-  Wifi,
-} from "lucide-react";
+import { ChevronDown, Cpu, LogOut, RefreshCw, User, Wifi } from "lucide-react";
 import Image from "next/image";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MobileNavContext } from "./mobile-nav";
 import { useConfirm } from "../providers/confirm-provider";
 import { useAuthModal } from "@/hooks/use-auth-modal";
 import { cn } from "@/lib/utils";
@@ -97,7 +88,7 @@ export function Header() {
             src="/logo.png"
             alt="Dashboard"
             fill
-            className="object-contain object-left"
+            className="object-contain object-left brightness-0 invert"
             sizes="(min-width: 1024px) 50vw, 100vw"
             priority
           />
@@ -113,7 +104,7 @@ export function Header() {
               src="/logo.png"
               alt="Dashboard"
               fill
-              className="object-contain object-left"
+              className="object-contain object-left brightness-0 invert"
               priority
               sizes="(min-width: 1024px) 60vw, 100vw"
               draggable={false}

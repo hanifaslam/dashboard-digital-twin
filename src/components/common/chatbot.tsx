@@ -206,7 +206,7 @@ export function Chatbot() {
                     alt="Logo"
                     width={20}
                     height={20}
-                    className="object-contain"
+                    className="object-contain brightness-0 invert"
                   />
                   <div className="space-y-0.5">
                     <span className="block text-sm font-semibold tracking-wide text-white">
@@ -248,7 +248,7 @@ export function Chatbot() {
                                 <AvatarImage
                                   src="/logo.png"
                                   alt="Bot Logo"
-                                  className="object-contain p-1"
+                                  className="object-contain p-1 brightness-0 invert"
                                 />
                                 <AvatarFallback className="bg-slate-900 text-cyan-400">
                                   DTA
@@ -279,7 +279,7 @@ export function Chatbot() {
                           <AvatarImage
                             src="/logo.png"
                             alt="Logo"
-                            className="object-contain p-1"
+                            className="object-contain p-1 brightness-0 invert"
                           />
                           <AvatarFallback className="bg-slate-900 text-cyan-400">
                             DTA
@@ -375,7 +375,7 @@ export function Chatbot() {
                   alt="Logo"
                   width={22}
                   height={22}
-                  className="object-contain"
+                  className="object-contain brightness-0 invert"
                 />
               </motion.div>
             )}
