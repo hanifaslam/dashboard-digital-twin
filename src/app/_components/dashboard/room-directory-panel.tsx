@@ -1,13 +1,11 @@
 "use client";
 
-import { Activity, Search, X } from "lucide-react";
-import { type ChangeEvent, useEffect } from "react";
+import { Activity, Search, X, ChevronDown } from "lucide-react";
+import { type ChangeEvent, useEffect, useState } from "react";
 
 import type { Marker } from "@/components/three/scene-viewer";
 import { cn } from "@/lib/utils";
 import { type RoomFilterId, ROOM_FILTERS } from "./dashboard-config";
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
 
 interface RoomDirectoryPanelProps {
   buildingLabel: string;

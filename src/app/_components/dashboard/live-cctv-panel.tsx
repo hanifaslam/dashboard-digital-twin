@@ -124,7 +124,7 @@ export function LiveCctvPanel() {
                       <Maximize2 className="h-3 w-3" />
                     </button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-5xl w-[95vw] border-0 bg-transparent p-0 shadow-none [&>button]:text-white">
+                  <DialogContent className="sm:max-w-5xl w-[95vw] border-0 bg-transparent p-0 shadow-none [&>button]:z-50 [&>button]:text-white [&>button]:bg-black/60 [&>button]:hover:bg-black/80 [&>button]:top-4 [&>button]:right-4 [&>button]:h-8 [&>button]:w-8 [&>button]:rounded-full [&>button]:backdrop-blur-sm">
                     <DialogTitle className="sr-only">
                       Live CCTV {locationLabel}
                     </DialogTitle>

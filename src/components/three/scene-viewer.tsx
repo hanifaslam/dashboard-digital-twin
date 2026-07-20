@@ -26,6 +26,7 @@ import {
   RotateCw,
   ChevronUp,
   ChevronDown,
+  Cctv,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MapStyleSelector, MapStyleId } from "./map-style-selector";
@@ -40,7 +41,9 @@ export interface Marker {
   position: [number, number, number];
   label: string;
   description?: string;
-  type?: "dosen" | "class";
+  type?: "dosen" | "class" | "cctv";
+  cctvStreamId?: string;
+  cctvStreamName?: string;
   floor?: number;
 }
 
@@ -252,9 +255,16 @@ function MarkerBadge({
   const isOccupied = schedules?.some((s) => s.is_online);
 
   // Dynamically pick icon
+  const isCctv =
+    marker.type === "cctv" || marker.label.toLowerCase().includes("cctv");
   const isDosen =
-    marker.type === "dosen" || marker.label.toLowerCase().includes("dosen");
-  const IconComponent = isDosen ? LecturerRoomIcon : ClassRoomIcon;
+    !isCctv &&
+    (marker.type === "dosen" || marker.label.toLowerCase().includes("dosen"));
+  const IconComponent = isCctv
+    ? Cctv
+    : isDosen
+      ? LecturerRoomIcon
+      : ClassRoomIcon;
 
   return (
     <Html
@@ -292,7 +302,7 @@ function MarkerBadge({
         <div
           className={cn(
             "absolute inset-0 rounded-full animate-ping opacity-20",
-            isOccupied ? "bg-red-500" : "bg-cyan-400",
+            isCctv ? "bg-amber-400" : isOccupied ? "bg-red-500" : "bg-cyan-400",
             isActive ? "scale-125" : "scale-100",
           )}
         />
@@ -302,12 +312,16 @@ function MarkerBadge({
           className={cn(
             "relative w-7 h-7 rounded-full border flex items-center justify-center transition-all duration-300 shadow-md backdrop-blur-md",
             isActive
-              ? isOccupied
-                ? "bg-red-500 border-red-400 text-slate-950 shadow-[0_0_12px_rgba(239,68,68,0.8)] scale-110"
-                : "bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.8)] scale-110"
-              : isOccupied
-                ? "bg-slate-950/85 border-red-500/50 text-red-400 hover:border-red-400 hover:text-white hover:shadow-[0_0_8px_rgba(239,68,68,0.3)]"
-                : "bg-slate-950/85 border-cyan-500/30 text-cyan-400 hover:border-cyan-400 hover:text-white hover:shadow-[0_0_8px_rgba(6,182,212,0.3)]",
+              ? isCctv
+                ? "bg-amber-500 border-amber-400 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.8)] scale-110"
+                : isOccupied
+                  ? "bg-red-500 border-red-400 text-slate-950 shadow-[0_0_12px_rgba(239,68,68,0.8)] scale-110"
+                  : "bg-cyan-500 border-cyan-400 text-slate-950 shadow-[0_0_12px_rgba(6,182,212,0.8)] scale-110"
+              : isCctv
+                ? "bg-slate-950/85 border-amber-500/50 text-amber-400 hover:border-amber-400 hover:text-white hover:shadow-[0_0_8px_rgba(245,158,11,0.3)]"
+                : isOccupied
+                  ? "bg-slate-950/85 border-red-500/50 text-red-400 hover:border-red-400 hover:text-white hover:shadow-[0_0_8px_rgba(239,68,68,0.3)]"
+                  : "bg-slate-950/85 border-cyan-500/30 text-cyan-400 hover:border-cyan-400 hover:text-white hover:shadow-[0_0_8px_rgba(6,182,212,0.3)]",
           )}
         >
           <IconComponent className="h-3.5 w-3.5 transition-transform duration-300" />
@@ -318,12 +332,16 @@ function MarkerBadge({
           className={cn(
             "absolute left-9 top-1/2 -translate-y-1/2 transition-all duration-300 bg-slate-950/95 backdrop-blur-md text-[9px] py-1.5 px-2.5 rounded-md border whitespace-nowrap pointer-events-auto shadow-[0_4px_12px_rgba(0,0,0,0.5)]",
             isActive
-              ? isOccupied
-                ? "opacity-100 translate-x-0 text-white border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.25)] font-bold"
-                : "opacity-100 translate-x-0 text-white border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.25)] font-bold"
-              : isOccupied
-                ? "opacity-100 translate-x-0 text-red-400 border-red-500/50 group-hover/marker:text-white group-hover/marker:border-red-400"
-                : "opacity-100 translate-x-0 text-cyan-400 border-cyan-500/30 group-hover/marker:text-white group-hover/marker:border-cyan-400",
+              ? isCctv
+                ? "opacity-100 translate-x-0 text-white border-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.25)] font-bold"
+                : isOccupied
+                  ? "opacity-100 translate-x-0 text-white border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.25)] font-bold"
+                  : "opacity-100 translate-x-0 text-white border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.25)] font-bold"
+              : isCctv
+                ? "opacity-100 translate-x-0 text-amber-400 border-amber-500/50 group-hover/marker:text-white group-hover/marker:border-amber-400"
+                : isOccupied
+                  ? "opacity-100 translate-x-0 text-red-400 border-red-500/50 group-hover/marker:text-white group-hover/marker:border-red-400"
+                  : "opacity-100 translate-x-0 text-cyan-400 border-cyan-500/30 group-hover/marker:text-white group-hover/marker:border-cyan-400",
           )}
         >
           <div className="flex items-center gap-1.5">
@@ -331,7 +349,11 @@ function MarkerBadge({
               <span
                 className={cn(
                   "w-1 h-1 rounded-full animate-pulse shrink-0",
-                  isOccupied ? "bg-red-400" : "bg-cyan-400",
+                  isCctv
+                    ? "bg-amber-400"
+                    : isOccupied
+                      ? "bg-red-400"
+                      : "bg-cyan-400",
                 )}
               />
             )}

@@ -1,6 +1,8 @@
 "use client";
 
-import { MapPin, Moon, SunMedium, Wind } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, MapPin, Moon, SunMedium, Wind } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWeatherSummaryQuery } from "@/hooks/api/use-weather";
@@ -85,9 +87,10 @@ function WeatherStat({
 
 export function WeatherSummaryCard() {
   const { data, isLoading, isError } = useWeatherSummaryQuery();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="tech-card rounded-xl border border-cyan-500/20 bg-slate-950/75 p-4 backdrop-blur-lg">
+    <div className="tech-card rounded-xl border border-cyan-500/20 bg-slate-950/75 p-4 backdrop-blur-lg transition-all duration-300">
       {isLoading ? (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -118,7 +121,8 @@ export function WeatherSummaryCard() {
           <Wind className="h-8 w-8 text-cyan-500/35" />
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col">
+          {/* Main Weather Information (Always Visible) */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-1.5 text-cyan-100/55">
@@ -140,18 +144,44 @@ export function WeatherSummaryCard() {
               </p>
             </div>
 
-            <WeatherIcon isDay={data.isDay} />
+            <div className="flex items-start gap-2">
+              <WeatherIcon isDay={data.isDay} compact />
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="rounded-md p-1 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 transition-transform duration-300",
+                    !isExpanded && "rotate-180",
+                  )}
+                />
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 border-t border-cyan-500/10 pt-3">
-            <WeatherStat label="Humidity" value={`${data.humidity}%`} />
-            <WeatherStat label="Wind" value={`${data.windSpeed} km/h`} />
-            <WeatherStat
-              label="UV Index"
-              value={`UV ${data.uvIndex}`}
-              accentClassName="text-cyan-100"
-            />
-          </div>
+          {/* Collapsible Stats Section (Humidity, Wind, UV Index) */}
+          <AnimatePresence initial={false}>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-3 gap-4 border-t border-cyan-500/10 mt-3 pt-3">
+                  <WeatherStat label="Humidity" value={`${data.humidity}%`} />
+                  <WeatherStat label="Wind" value={`${data.windSpeed} km/h`} />
+                  <WeatherStat
+                    label="UV Index"
+                    value={`UV ${data.uvIndex}`}
+                    accentClassName="text-cyan-100"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>

@@ -19,6 +19,13 @@ export const BUILDING_MARKERS: Record<string, Marker[]> = {
       floor: 1,
     },
     {
+      id: "cmqi7u01y03cc01qsve7sa9rl",
+      position: [8.6, -1.5, 4.1],
+      label: "CCTV Lorong SB",
+      type: "cctv",
+      floor: 1,
+    },
+    {
       id: "cmpxepjbc0c5n01oc9doa8k66",
       position: [7.4, -1.5, 2.5],
       label: "SB 104",

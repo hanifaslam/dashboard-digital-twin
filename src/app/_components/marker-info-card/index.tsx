@@ -12,10 +12,13 @@ import { cn } from "@/lib/utils";
 import { DeviceTab } from "./device-tab";
 import { LecturerTab } from "./lecturer-tab";
 import { ScheduleTab } from "./schedule-tab";
+import { CctvCard } from "./cctv-card";
 
 interface MarkerInfoCardProps {
   id: string;
   title: string;
+  markerType?: string;
+  buildingName?: string;
   onClose: () => void;
   className?: string;
 }
@@ -157,6 +160,14 @@ function MarkerInfoCardInternal({
 
 export function MarkerInfoCard(props: MarkerInfoCardProps) {
   const queryClient = useQueryClient();
+
+  if (props.markerType === "cctv" || props.title.toLowerCase().includes("cctv")) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <CctvCard {...props} />
+      </QueryClientProvider>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

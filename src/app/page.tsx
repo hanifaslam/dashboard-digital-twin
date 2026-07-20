@@ -81,7 +81,8 @@ export default function Home() {
     return BUILDING_MARKERS[activeBuildingId] || [];
   }, [activeBuildingId]);
 
-  const filteredMarkers = useMemo(() => {
+  // Markers rendered in 3D scene (includes CCTV markers for active floor)
+  const scene3DMarkers = useMemo(() => {
     return activeMarkers.filter((marker) => {
       const matchesSearch = marker.label
         .toLowerCase()
@@ -95,6 +96,20 @@ export default function Home() {
         return false;
       }
 
+      return true;
+    });
+  }, [searchQuery, activeFloor, activeMarkers]);
+
+  // Markers rendered in Room Directory Panel (excludes CCTV markers & applies room filter)
+  const roomDirectoryMarkers = useMemo(() => {
+    return scene3DMarkers.filter((marker) => {
+      if (
+        marker.type === "cctv" ||
+        marker.label.toLowerCase().includes("cctv")
+      ) {
+        return false;
+      }
+
       if (activeFilter === "DOSEN") {
         return marker.type === "dosen";
       }
@@ -105,7 +120,7 @@ export default function Home() {
 
       return true;
     });
-  }, [activeFilter, searchQuery, activeFloor, activeMarkers]);
+  }, [activeFilter, scene3DMarkers]);
 
   const roomIds = useMemo(
     () => activeMarkers.map((m) => m.id),
@@ -176,7 +191,7 @@ export default function Home() {
       <div className="absolute inset-0 z-0 bg-slate-950">
         <MapboxScene
           modelUrl={activeModel}
-          markers={filteredMarkers}
+          markers={scene3DMarkers}
           selectedRoomId={selectedRoomId}
           onMarkerClick={(marker) => setSelectedRoomId(marker.id)}
           buildingName={activeBuilding?.name}
@@ -228,7 +243,7 @@ export default function Home() {
                 ? "Loading building..."
                 : "No building selected")
             }
-            markers={filteredMarkers}
+            markers={roomDirectoryMarkers}
             selectedRoomId={selectedRoomId}
             searchQuery={searchQuery}
             activeFilter={activeFilter}
@@ -288,7 +303,13 @@ export default function Home() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 32 }}
               transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="pointer-events-auto tech-card flex max-lg:h-[45vh] lg:h-full w-full flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-lg backdrop-blur-xl"
+              className={cn(
+                "pointer-events-auto tech-card flex w-full flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-950/90 p-0 shadow-lg backdrop-blur-xl",
+                activeMarkers.find((m) => m.id === selectedRoomId)?.type ===
+                  "cctv"
+                  ? "h-auto"
+                  : "max-lg:h-[45vh] lg:h-full",
+              )}
             >
               <MarkerInfoCard
                 id={selectedRoomId}
@@ -296,6 +317,11 @@ export default function Home() {
                   activeMarkers.find((marker) => marker.id === selectedRoomId)
                     ?.label ?? "Asset Room"
                 }
+                markerType={
+                  activeMarkers.find((marker) => marker.id === selectedRoomId)
+                    ?.type
+                }
+                buildingName={activeBuilding?.name}
                 onClose={() => setSelectedRoomId(null)}
                 className="h-full w-full border-none bg-transparent shadow-none"
               />
