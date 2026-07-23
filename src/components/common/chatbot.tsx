@@ -177,6 +177,13 @@ export function Chatbot() {
     await sendMessage(inputValue);
   };
 
+  const handleClearChat = () => {
+    setMessages([INITIAL_MESSAGE]);
+    setSessionId(null);
+    window.localStorage.removeItem(CHATBOT_SESSION_KEY);
+    setIsOpen(false);
+  };
+
   if (!isMounted) {
     return null;
   }
@@ -215,7 +222,7 @@ export function Chatbot() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleClearChat}
                   className="rounded-md p-1 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
                 >
                   <X className="h-4 w-4" />
@@ -261,7 +268,7 @@ export function Chatbot() {
                             )}
                           </Avatar>
                           <div
-                            className={`rounded-xl px-3 py-2 text-[11px] leading-relaxed shadow-sm ${
+                            className={`whitespace-pre-wrap rounded-xl px-3 py-2 text-[11px] leading-relaxed shadow-sm ${
                               message.sender === "user"
                                 ? "border border-cyan-500/40 bg-cyan-600/20 text-white"
                                 : "border border-cyan-500/20 bg-slate-900 text-white/90"
@@ -341,7 +348,7 @@ export function Chatbot() {
 
       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => (isOpen ? handleClearChat() : setIsOpen(true))}
           className={cn(
             "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(0,0,0,0.3)]",
             isOpen
